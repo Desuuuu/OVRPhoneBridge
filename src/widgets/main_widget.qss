@@ -1,0 +1,198 @@
+* {
+  font-family: Calibri;
+}
+QLabel {
+  color: #ddd;
+  font-size: 18pt;
+}
+QFrame[frameShape="4"], QFrame[frameShape="5"] {
+  color: rgba(255, 255, 255, 35);
+}
+QPushButton {
+  padding: 6px 16px;
+  color: #ddd;
+  font-size: 18pt;
+  outline: none;
+  border: none;
+  border-radius: 1px;
+  background-color: #184978;
+}
+QPushButton:hover {
+  border-radius: 1px;
+  background-color: #1e537e;
+}
+QPushButton:pressed {
+  border-radius: 1px;
+  background-color: #2a6089;
+}
+QLineEdit {
+  border: none;
+  border-radius: 1px;
+  padding: 2px 10px;
+  color: #ddd;
+  font-size: 16pt;
+  background-color: #184978;
+  selection-color: #111;
+  selection-background-color: darkgray;
+}
+QLineEdit:hover {
+  border-radius: 1px;
+  background-color: #1e537e;
+}
+QPlainTextEdit {
+  border: none;
+  border-radius: 1px;
+  padding: 2px 10px;
+  color: #ddd;
+  font-size: 18pt;
+  background-color: #184978;
+  selection-color: #111;
+  selection-background-color: darkgray;
+}
+QPlainTextEdit:hover {
+  border-radius: 1px;
+  background-color: #1e537e;
+}
+QCheckBox {
+  color: #ddd;
+  spacing: 15px;
+  outline: none;
+  font-size: 18pt;
+}
+QCheckBox::indicator {
+  width: 30px;
+  height: 30px;
+  border-radius: 1px;
+  background-color: #184978;
+}
+QCheckBox::indicator:unchecked {
+  image: none;
+}
+QCheckBox::indicator:unchecked:hover {
+  image: none;
+  border-radius: 1px;
+  background-color: #1e537e;
+}
+QCheckBox::indicator:unchecked:pressed {
+  image: none;
+  border-radius: 1px;
+  background-color: #2a6089;
+}
+QCheckBox::indicator:checked {
+  image: url(:/images/check.png);
+}
+QCheckBox::indicator:checked:hover {
+  image: url(:/images/check.png);
+  border-radius: 1px;
+  background-color: #1e537e;
+}
+QCheckBox::indicator:checked:pressed {
+  image: url(:/images/check.png);
+  border-radius: 1px;
+  background-color: #2a6089;
+}
+QScrollBar:vertical {
+  background-color: #1b2e43;
+  width: 30px;
+  margin: 0;
+  margin-left: 15px;
+}
+QScrollBar::handle:vertical {
+  background-color: #184978;
+  min-height: 20px;
+}
+QScrollBar::handle:vertical:hover {
+  background-color: #1e537e;
+}
+QScrollBar::handle:vertical:pressed {
+  background-color: #2a6089;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+  width: 0;
+  height: 0;
+}
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+  background: none;
+}
+QTableWidget {
+  color: #ddd;
+  font-size: 18pt;
+  gridline-color: #1b2e43;
+  background-color: transparent;
+}
+QTableWidget::item {
+  border: none;
+  padding: 12px 50px 12px 20px;
+}
+QTableWidget::item:disabled {
+  color: #999;
+  padding: 12px 20px 12px 50px;
+}
+QWidget#MainWidget {
+  background-color: #0e2640;
+}
+QLabel#appNameLabel {
+  font-size: 32pt;
+  font-weight: bold;
+}
+QPushButton#notificationsButton, QPushButton#smsButton, QPushButton#deviceButton, QPushButton#settingsButton {
+  font-size: 20pt;
+}
+QScrollArea, QWidget#contentScrollWidget {
+  background-color: transparent;
+}
+QLabel#versionLabel {
+  font-size: 16pt;
+}
+QWidget#NotificationWidget, QWidget#ShortSMSOutWidget {
+  background-color: #163e65;
+}
+QLabel#notificationAppName {
+  color: #aaa;
+  font-size: 16pt;
+}
+QLabel#notificationTitle {
+  color: #ddd;
+  font-size: 20pt;
+}
+QLabel#notificationText {
+  color: #999;
+  font-size: 18pt;
+}
+QWidget#SMSWidget {
+  background-color: #184978;
+}
+QWidget#SMSWidget:hover {
+  background-color: #1e537e;
+}
+QLabel#smsTitle {
+  color: #ddd;
+  font-size: 20pt;
+}
+QLabel#smsText {
+  color: #bbb;
+  font-size: 18pt;
+  margin-left: 1px;
+}
+QLabel#smsDate {
+  color: #999;
+  font-size: 16pt;
+}
+QWidget#ShortSMSInWidget {
+  background-color: #2a4967;
+}
+QLabel#shortSmsOutText {
+  color: #ddd;
+}
+QLabel#shortSmsInText {
+  color: #ccc;
+}
+QPushButton#dismissButton {
+  color: #888;
+  padding: 14px 10px;
+  font-size: 14pt;
+  background-color: transparent;
+}
+QPushButton#dismissButton:hover, QPushButton#dismissButton:pressed {
+  color: #aaa;
+}

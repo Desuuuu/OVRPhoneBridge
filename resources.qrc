@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/icons/icon.png</file>
+        <file>src/widgets/highlight_button.qss</file>
+        <file>src/widgets/main_widget.qss</file>
+        <file>images/notification.png</file>
+        <file>images/check.png</file>
+        <file>sounds/notification.wav</file>
+        <file>images/loading.svg</file>
+    </qresource>
+</RCC>

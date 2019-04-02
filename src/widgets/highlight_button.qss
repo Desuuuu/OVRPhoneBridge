@@ -1,0 +1,4 @@
+QPushButton[highlight="true"] {
+    background-color: #2a6089;
+    border-radius: 1px;
+}

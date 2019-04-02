@@ -1,0 +1,20 @@
+{
+	"source" : "builtin",
+	"applications": [
+    {
+      "app_key": "desuuuu.ovr_phone_bridge",
+      "launch_type": "binary",
+			"binary_path_windows": "OVRPhoneBridge.exe",
+			"binary_path_osx": "OVRPhoneBridge",
+			"binary_path_linux": "OVRPhoneBridge",
+			"arguments" : "--silent",
+      "is_dashboard_overlay": true,
+      "strings": {
+        "en_us": {
+          "name": "OVRPhoneBridge",
+          "description": "OVRPhoneBridge Overlay"
+        }
+      }
+    }
+  ]
+}
