@@ -650,7 +650,6 @@ void VROverlayController::PollEvents() {
 					break;
 
 				case vr::VREvent_Quit:
-				case vr::VREvent_ProcessQuit:
 				case vr::VREvent_DriverRequestedQuit:
 					qApp->quit();
 					break;
