@@ -25,8 +25,8 @@ class Crypto {
 								  std::size_t destLen,
 								  const char* src,
 								  std::size_t srcLen);
-		static void writeUInt64BE(unsigned char* dest, const uint64_t& src);
-		static uint64_t readUInt64BE(const unsigned char* src);
+		static void WriteUInt64BE(unsigned char* dest, const uint64_t& src);
+		static uint64_t ReadUInt64BE(const unsigned char* src);
 };
 
 class PasswordTooShortException : public std::runtime_error {

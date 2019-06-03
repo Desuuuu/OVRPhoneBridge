@@ -42,7 +42,7 @@ QString Crypto::Encrypt(const QString& plainText) const {
 
 	unsigned char* buffer = new unsigned char[adLen + nonceLen + cipherLen + encodedLen];
 
-	writeUInt64BE(buffer, GetCurrentTime());
+	WriteUInt64BE(buffer, GetCurrentTime());
 
 	randombytes_buf((buffer + adLen), crypto_aead_xchacha20poly1305_IETF_NPUBBYTES);
 
@@ -141,7 +141,7 @@ QString Crypto::Decrypt(const QString& encryptedText) const {
 		throw std::runtime_error("Decryption failed");
 	}
 
-	uint64_t timestamp = readUInt64BE(buffer);
+	uint64_t timestamp = ReadUInt64BE(buffer);
 	uint64_t currentTime = GetCurrentTime();
 
 	if (timestamp > currentTime + TIMESTAMP_LEEWAY
@@ -215,7 +215,7 @@ void Crypto::TransformSalt(char* dest, std::size_t destLen, const char* src, std
 	}
 }
 
-void Crypto::writeUInt64BE(unsigned char* dest, const uint64_t& src) {
+void Crypto::WriteUInt64BE(unsigned char* dest, const uint64_t& src) {
 	dest[0] = static_cast<unsigned char>((src >> 56) & 0xff);
 	dest[1] = static_cast<unsigned char>((src >> 48) & 0xff);
 	dest[2] = static_cast<unsigned char>((src >> 40) & 0xff);
@@ -226,7 +226,7 @@ void Crypto::writeUInt64BE(unsigned char* dest, const uint64_t& src) {
 	dest[7] = static_cast<unsigned char>(src & 0xff);
 }
 
-uint64_t Crypto::readUInt64BE(const unsigned char* src) {
+uint64_t Crypto::ReadUInt64BE(const unsigned char* src) {
 	return (static_cast<uint64_t>(src[0]) << 56
 			| static_cast<uint64_t>(src[1]) << 48
 			| static_cast<uint64_t>(src[2]) << 40
