@@ -266,6 +266,9 @@ int main(int argc, char* argv[]) {
 		exit(EXIT_FAILURE);
 	}
 
+	QSettings settings(QDir::cleanPath(configDir.absoluteFilePath(SETTINGS_PATH)),
+					   QSettings::IniFormat);
+
 	if (!vr::VR_IsRuntimeInstalled()) {
 		spdlog::error("OpenVR runtime not installed");
 
@@ -297,7 +300,7 @@ int main(int argc, char* argv[]) {
 			exit(EXIT_SUCCESS);
 		}
 
-		widget = new MainWidget(configDir);
+		widget = new MainWidget(&settings);
 
 		if (!desktop) {
 			controller = new VROverlayController(widget);

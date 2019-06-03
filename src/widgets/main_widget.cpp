@@ -9,12 +9,12 @@
 #include "ui_main_widget.h"
 #include "../common.h"
 
-MainWidget::MainWidget(const QDir& configDir, QWidget* parent)
+MainWidget::MainWidget(QSettings* settings, QWidget* parent)
 	: FadeWidget(parent),
 	  ui(new Ui::MainWidget),
 	  m_currentTab(Tab::NONE),
 	  m_serverState(ServerState::NONE),
-	  m_settings(nullptr),
+	  m_settings(settings),
 	  m_bridge(nullptr),
 	  m_server(nullptr),
 	  m_notificationsTab(nullptr),
@@ -27,7 +27,6 @@ MainWidget::MainWidget(const QDir& configDir, QWidget* parent)
 	ui->versionLabel->setText(APP_VERSION);
 
 	SetupStylesheet();
-	SetupSettings(configDir);
 	SetupBridge();
 	SetupTabs();
 	SetupServer();
@@ -310,12 +309,6 @@ void MainWidget::SetupStylesheet() {
 	setStyleSheet(styleFile.readAll());
 
 	styleFile.close();
-}
-
-void MainWidget::SetupSettings(const QDir& configDir) {
-	QString settingsPath = QDir::cleanPath(configDir.absoluteFilePath(SETTINGS_PATH));
-
-	m_settings = new QSettings(settingsPath, QSettings::IniFormat, this);
 }
 
 void MainWidget::SetupBridge() {

@@ -24,7 +24,7 @@ class MainWidget : public FadeWidget {
 		Q_OBJECT
 
 	public:
-		MainWidget(const QDir& configDir, QWidget* parent = nullptr);
+		MainWidget(QSettings* settings, QWidget* parent = nullptr);
 		~MainWidget();
 
 	public slots:
@@ -77,7 +77,6 @@ class MainWidget : public FadeWidget {
 		void StopServer();
 
 		void SetupStylesheet();
-		void SetupSettings(const QDir& configDir);
 		void SetupBridge();
 		void SetupTabs();
 		void SetupServer();
