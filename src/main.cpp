@@ -10,6 +10,7 @@
 #include <spdlog/sinks/rotating_file_sink.h>
 
 #include "common.h"
+#include "crypto.h"
 #include "vr_overlay_controller.h"
 #include "widgets/main_widget.h"
 
@@ -268,6 +269,14 @@ int main(int argc, char* argv[]) {
 
 	QSettings settings(QDir::cleanPath(configDir.absoluteFilePath(SETTINGS_PATH)),
 					   QSettings::IniFormat);
+
+	if (app.arguments().indexOf("--generate_keypair") >= 0) {
+		Crypto::GenerateKeyPair(&settings);
+
+		settings.sync();
+
+		exit(EXIT_SUCCESS);
+	}
 
 	if (!vr::VR_IsRuntimeInstalled()) {
 		spdlog::error("OpenVR runtime not installed");
