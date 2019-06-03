@@ -236,11 +236,21 @@ bool MainWidget::StartServer(std::string* error) {
 		return true;
 	}
 
-	QString encryptionPassword = m_settings->value("encryption_password", "").toString();
+	QString publicKey = m_settings->value("public_key", "").toString();
 
-	if (encryptionPassword.isEmpty()) {
+	if (publicKey.isEmpty()) {
 		if (error != nullptr) {
-			*error = "Missing password";
+			*error = "Missing public key";
+		}
+
+		return false;
+	}
+
+	QString secretKey = m_settings->value("secret_key", "").toString();
+
+	if (secretKey.isEmpty()) {
+		if (error != nullptr) {
+			*error = "Missing secret key";
 		}
 
 		return false;
@@ -257,7 +267,8 @@ bool MainWidget::StartServer(std::string* error) {
 	}
 
 	try {
-		m_server = new Server(encryptionPassword,
+		m_server = new Server(publicKey,
+							  secretKey,
 							  static_cast<uint16_t>(serverPort),
 							  QHostAddress::Any,
 							  this);
@@ -348,8 +359,13 @@ void MainWidget::SetupTabs() {
 void MainWidget::SetupServer() {
 	UpdateServerState(ServerState::STOPPED);
 
-	if (m_settings->contains("encryption_password")
-			&& m_settings->value("autostart", DEFAULT_AUTOSTART).toBool()) {
+	if (!m_settings->contains("public_key")
+			|| !m_settings->contains("secret_key")
+			|| !m_settings->contains("identifier")) {
+		Crypto::GenerateKeyPair(m_settings);
+	}
+
+	if (m_settings->value("autostart", DEFAULT_AUTOSTART).toBool()) {
 		std::string error;
 
 		if (!StartServer(&error)) {
