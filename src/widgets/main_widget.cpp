@@ -42,9 +42,9 @@ MainWidget::~MainWidget() {
 }
 
 void MainWidget::VROverlayShown() {
-	if (m_serverState != ServerState::CONNECTED) {
-		SwitchTab(Tab::SETTINGS, false);
-	}
+	SwitchTab(m_serverState == ServerState::CONNECTED
+			  ? Tab::NOTIFICATIONS
+			  : Tab::SETTINGS, false);
 }
 
 void MainWidget::VRNotificationOpened(const std::string& identifier) {
