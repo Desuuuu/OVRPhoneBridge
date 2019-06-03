@@ -36,28 +36,6 @@ SettingsTabWidget::SettingsTabWidget(QSettings* settings, QWidget* parent)
 		});
 	}
 
-	QString encryptionPassword = m_settings->value("encryption_password", "").toString();
-
-	if (!encryptionPassword.isEmpty()) {
-		ui->encryptionPasswordLineEdit->setText("********");
-	} else {
-		ui->encryptionPasswordLineEdit->setText("");
-	}
-
-	if (m_desktop) {
-		connect(ui->encryptionPasswordLineEdit, &FocusLineEdit::editingFinished, this, [&]() {
-			QString text = ui->encryptionPasswordLineEdit->text();
-
-			if (SavePassword(text.toStdString())) {
-				ui->encryptionPasswordLineEdit->clearFocus();
-
-				if (!text.isEmpty()) {
-					ui->encryptionPasswordLineEdit->setText("********");
-				}
-			}
-		});
-	}
-
 	if (m_settings->value("autostart", DEFAULT_AUTOSTART).toBool()) {
 		ui->autoStartCheckBox->setCheckState(Qt::Checked);
 	} else {
@@ -92,14 +70,6 @@ void SettingsTabWidget::VRKeyboardData(uint8_t identifier, const std::string& da
 		if (SavePort(input)) {
 			ui->portLineEdit->setText(input.c_str());
 		}
-	} else if (identifier == KEYBOARD_INPUT_PASSWORD) {
-		if (SavePassword(data)) {
-			if (data.empty()) {
-				ui->encryptionPasswordLineEdit->setText("");
-			} else {
-				ui->encryptionPasswordLineEdit->setText("********");
-			}
-		}
 	}
 }
 
@@ -108,19 +78,6 @@ void SettingsTabWidget::on_portLineEdit_FocusReceived(FocusLineEdit* edit) {
 						static_cast<uint32_t>(edit->maxLength()),
 						edit->text().toStdString().c_str(),
 						"Port");
-}
-
-void SettingsTabWidget::on_encryptionPasswordLineEdit_FocusReceived(FocusLineEdit* edit) {
-	emit ShowVRKeyboard(KEYBOARD_INPUT_PASSWORD,
-						static_cast<uint32_t>(edit->maxLength()),
-						"",
-						"Password",
-						true,
-						true);
-
-	if (m_desktop) {
-		edit->setText("");
-	}
 }
 
 void SettingsTabWidget::on_autoStartCheckBox_stateChanged(int state) {
@@ -163,41 +120,6 @@ bool SettingsTabWidget::SavePort(const std::string& input) {
 
 		return false;
 	}
-
-	return true;
-}
-
-bool SettingsTabWidget::SavePassword(const std::string& input) {
-	if (input.empty()) {
-		m_settings->remove("encryption_password");
-
-		return true;
-	}
-
-	QString password;
-
-	try {
-		password = Crypto::DerivePassword(input.c_str());
-	} catch (const PasswordTooShortException& ex) {
-		std::ostringstream stream;
-
-		stream << "Failed to edit password\n";
-		stream << "Please provide at least " << ex.GetMinLength() << " characters";
-
-		emit ShowVRNotification("invalid_password",
-								stream.str(),
-								false);
-
-		return false;
-	} catch (const std::exception& ex) {
-		emit ShowVRNotification("invalid_password",
-								(std::string("Failed to edit password\n") + ex.what()),
-								false);
-
-		return false;
-	}
-
-	m_settings->setValue("encryption_password", password);
 
 	return true;
 }

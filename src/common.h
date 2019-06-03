@@ -31,8 +31,6 @@
 #define SMS_MAX_PAGE                8
 #define SMS_MAX_LENGTH              150
 
-#define ENCRYPTION_KEY_MIN_LENGTH   6
-#define ENCRYPTION_KEY_SALT         "OVRPhoneBridge"
 #define TIMESTAMP_LEEWAY            300U
 
 #define SCROLL_SPEED                30.0f
@@ -40,8 +38,7 @@
 #define DATE_FORMAT                 "yyyy-MM-dd'T'HH:mm:ss'Z'"
 
 #define KEYBOARD_INPUT_PORT         0
-#define KEYBOARD_INPUT_PASSWORD     1
-#define KEYBOARD_INPUT_SMS          2
+#define KEYBOARD_INPUT_SMS          1
 
 //Prevents placement issues with fully opaque QGraphicsOpacityEffect
 #define OPACITY_EFFECT_MAX          0.9999

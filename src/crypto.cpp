@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <sodium/utils.h>
 #include <sodium/randombytes.h>
-#include <sodium/crypto_pwhash.h>
 
 #include "crypto.h"
 #include "common.h"
@@ -159,60 +158,10 @@ QString Crypto::Decrypt(const QString& encryptedText) const {
 	return result;
 }
 
-QString Crypto::DerivePassword(const QString& password) {
-	if (password.length() < ENCRYPTION_KEY_MIN_LENGTH) {
-		throw PasswordTooShortException(ENCRYPTION_KEY_MIN_LENGTH);
-	}
-
-	QByteArray input = password.toUtf8();
-
-	char salt[16];
-
-	TransformSalt(salt, sizeof(salt), ENCRYPTION_KEY_SALT, strlen(ENCRYPTION_KEY_SALT));
-
-	unsigned char key[crypto_aead_xchacha20poly1305_ietf_KEYBYTES];
-
-	if (crypto_pwhash(
-					key,
-					sizeof(key),
-					input.constData(),
-					static_cast<std::size_t>(input.length()),
-					reinterpret_cast<unsigned char*>(salt),
-					4,
-					67108864,
-					crypto_pwhash_ALG_ARGON2I13) != 0) {
-		throw std::runtime_error("Hashing failed");
-	}
-
-	char encoded[sodium_base64_ENCODED_LEN(sizeof(key), sodium_base64_VARIANT_ORIGINAL)];
-
-	return QString(sodium_bin2base64(
-						   encoded,
-						   sizeof(encoded),
-						   key,
-						   sizeof(key),
-						   sodium_base64_VARIANT_ORIGINAL));
-}
-
 uint64_t Crypto::GetCurrentTime() {
 	std::time_t timestamp = std::time(nullptr);
 
 	return static_cast<uint64_t>(timestamp);
-}
-
-void Crypto::TransformSalt(char* dest, std::size_t destLen, const char* src, std::size_t srcLen) {
-	if (srcLen > 0) {
-		std::size_t i = 0;
-		std::size_t j = 0;
-
-		while (i < destLen) {
-			dest[i++] = src[j++];
-
-			if (j == srcLen) {
-				j = 0;
-			}
-		}
-	}
 }
 
 void Crypto::WriteUInt64BE(unsigned char* dest, const uint64_t& src) {
@@ -237,11 +186,3 @@ uint64_t Crypto::ReadUInt64BE(const unsigned char* src) {
 			| static_cast<uint64_t>(src[7]));
 }
 
-PasswordTooShortException::PasswordTooShortException(const std::size_t& minLen)
-	: std::runtime_error("Password too short") {
-	m_minLen = minLen;
-}
-
-std::size_t PasswordTooShortException::GetMinLength() const {
-	return m_minLen;
-}

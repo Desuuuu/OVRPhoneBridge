@@ -25,7 +25,6 @@ class SettingsTabWidget : public QWidget {
 
 	private slots:
 		void on_portLineEdit_FocusReceived(FocusLineEdit* edit);
-		void on_encryptionPasswordLineEdit_FocusReceived(FocusLineEdit* edit);
 		void on_autoStartCheckBox_stateChanged(int state);
 		void on_notificationSoundCheckBox_stateChanged(int state);
 		void on_toggleServerButton_clicked();
@@ -53,7 +52,6 @@ class SettingsTabWidget : public QWidget {
 		bool m_desktop;
 
 		bool SavePort(const std::string& input);
-		bool SavePassword(const std::string& input);
 };
 
 #endif /* SETTINGS_TAB_WIDGET_H */
