@@ -146,11 +146,17 @@ QString Crypto::Decrypt(const QString& encryptedText) const {
 
 	if (timestamp > currentTime + TIMESTAMP_LEEWAY
 			|| timestamp < currentTime - TIMESTAMP_LEEWAY) {
+		delete[] buffer;
+
 		throw std::runtime_error("Expired message");
 	}
 
-	return QString::fromUtf8(reinterpret_cast<char*>(buffer + decodedLen),
-							 static_cast<int>(realDecipherLen));
+	QString result = QString::fromUtf8(reinterpret_cast<char*>(buffer + decodedLen),
+									   static_cast<int>(realDecipherLen));
+
+	delete[] buffer;
+
+	return result;
 }
 
 QString Crypto::DerivePassword(const QString& password) {
