@@ -144,6 +144,10 @@ QScrollArea, QWidget#contentScrollWidget {
 QLabel#versionLabel {
   font-size: 16pt;
 }
+QLabel#identifierLabel {
+  font-size: 12pt;
+  color: #999;
+}
 QWidget#NotificationWidget, QWidget#ShortSMSOutWidget {
   background-color: #163e65;
 }

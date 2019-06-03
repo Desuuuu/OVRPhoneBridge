@@ -128,6 +128,8 @@ void MainWidget::SwitchTab(const Tab& tab, bool animate) {
 				m_notificationsTab->setVisible(true);
 			}
 
+			ui->identifierLabel->setVisible(false);
+
 			break;
 
 		case Tab::SMS:
@@ -144,6 +146,8 @@ void MainWidget::SwitchTab(const Tab& tab, bool animate) {
 				m_settingsTab->setVisible(false);
 				m_smsTab->setVisible(true);
 			}
+
+			ui->identifierLabel->setVisible(false);
 
 			break;
 
@@ -162,6 +166,8 @@ void MainWidget::SwitchTab(const Tab& tab, bool animate) {
 				m_deviceTab->setVisible(true);
 			}
 
+			ui->identifierLabel->setVisible(false);
+
 			break;
 
 		case Tab::SETTINGS:
@@ -171,12 +177,24 @@ void MainWidget::SwitchTab(const Tab& tab, bool animate) {
 			ui->settingsButton->SetHighlight(true);
 
 			if (animate) {
-				FadeOutIn(GetTabWidget(m_currentTab), m_settingsTab, 50, 100);
+				FadeOutIn(GetTabWidget(m_currentTab),
+						  m_settingsTab,
+						  50,
+						  100,
+						  QEasingCurve::Linear,
+						  QEasingCurve::Linear,
+				[&](bool aborted) {
+					if (!aborted) {
+						ui->identifierLabel->setVisible(true);
+					}
+				});
 			} else {
 				m_notificationsTab->setVisible(false);
 				m_smsTab->setVisible(false);
 				m_deviceTab->setVisible(false);
 				m_settingsTab->setVisible(true);
+
+				ui->identifierLabel->setVisible(true);
 			}
 
 			break;
@@ -364,6 +382,12 @@ void MainWidget::SetupServer() {
 			|| !m_settings->contains("identifier")) {
 		Crypto::GenerateKeyPair(m_settings);
 	}
+
+	QSizePolicy sizePolicy = ui->identifierLabel->sizePolicy();
+	sizePolicy.setRetainSizeWhenHidden(true);
+	ui->identifierLabel->setSizePolicy(sizePolicy);
+
+	ui->identifierLabel->setText(m_settings->value("identifier", "-").toString());
 
 	if (m_settings->value("autostart", DEFAULT_AUTOSTART).toBool()) {
 		std::string error;
