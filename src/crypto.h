@@ -5,19 +5,25 @@
 #include <stdexcept>
 
 #include <QString>
+#include <QSettings>
 
-#include <sodium/crypto_aead_xchacha20poly1305.h>
+#include <sodium/crypto_kx.h>
 
 class Crypto {
 	public:
-		Crypto(const QString& encryptionKey);
+		Crypto(const QString& publicKeyHex,
+			   const QString& secretKeyHex,
+			   const QString& clientPublicKeyHex);
 
 		QString Encrypt(const QString& plainText) const;
 		QString Decrypt(const QString& encryptedText) const;
 
+		static void GenerateKeyPair(QSettings* settings);
+		static QString GetIdentifier(const unsigned char* publicKey);
 
 	private:
-		unsigned char m_key[crypto_aead_xchacha20poly1305_ietf_KEYBYTES];
+		unsigned char m_sharedPublicKey[crypto_kx_SESSIONKEYBYTES];
+		unsigned char m_sharedSecretKey[crypto_kx_SESSIONKEYBYTES];
 
 		static uint64_t GetCurrentTime();
     static void WriteUInt64BE(unsigned char* dest, const uint64_t& src);

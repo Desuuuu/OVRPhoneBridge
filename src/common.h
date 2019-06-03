@@ -21,6 +21,7 @@
 #define LOG_MAX_FILES               3
 
 #define SETTINGS_PATH               "settings.ini"
+#define IDENTIFIER_PATH             "identifier.txt"
 #define DEFAULT_PORT                8888
 #define DEFAULT_AUTOSTART           true
 #define KICK_BANTIME                300U

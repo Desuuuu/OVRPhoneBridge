@@ -1,29 +1,81 @@
 #include <ctime>
 #include <cstring>
 #include <algorithm>
+#include <spdlog/spdlog.h>
 #include <sodium/utils.h>
 #include <sodium/randombytes.h>
+#include <sodium/crypto_shorthash.h>
+#include <sodium/crypto_aead_xchacha20poly1305.h>
+
+#include <QDir>
+#include <QFile>
+#include <QTextStream>
+#include <QStandardPaths>
 
 #include "crypto.h"
 #include "common.h"
 
-Crypto::Crypto(const QString& encryptionKey) {
-	std::size_t keyLen;
+Crypto::Crypto(const QString& publicKeyHex,
+			   const QString& secretKeyHex,
+			   const QString& clientPublicKeyHex) {
+	unsigned char publicKey[crypto_kx_PUBLICKEYBYTES];
+	unsigned char secretKey[crypto_kx_SECRETKEYBYTES];
+	unsigned char clientPublicKey[crypto_kx_PUBLICKEYBYTES];
 
-	if (sodium_base642bin(
-					m_key,
-					sizeof(m_key),
-					encryptionKey.toUtf8().constData(),
-					static_cast<std::size_t>(encryptionKey.length()),
-					"\n\r ",
-					&keyLen,
+	size_t keyLen;
+
+	if (sodium_hex2bin(
+					publicKey,
+					sizeof(publicKey),
+					publicKeyHex.toUtf8().constData(),
+					static_cast<std::size_t>(publicKeyHex.length()),
 					nullptr,
-					sodium_base64_VARIANT_ORIGINAL) != 0) {
-		throw std::runtime_error("Invalid key");
+					&keyLen,
+					nullptr) != 0) {
+		throw std::runtime_error("Invalid public key");
 	}
 
-	if (keyLen != crypto_aead_xchacha20poly1305_ietf_KEYBYTES) {
-		throw std::runtime_error("Invalid key length");
+	if (keyLen != crypto_kx_PUBLICKEYBYTES) {
+		throw std::runtime_error("Invalid public key length");
+	}
+
+	if (sodium_hex2bin(
+					secretKey,
+					sizeof(secretKey),
+					secretKeyHex.toUtf8().constData(),
+					static_cast<std::size_t>(secretKeyHex.length()),
+					nullptr,
+					&keyLen,
+					nullptr) != 0) {
+		throw std::runtime_error("Invalid secret key");
+	}
+
+	if (keyLen != crypto_kx_SECRETKEYBYTES) {
+		throw std::runtime_error("Invalid secret key length");
+	}
+
+	if (sodium_hex2bin(
+					clientPublicKey,
+					sizeof(clientPublicKey),
+					clientPublicKeyHex.toUtf8().constData(),
+					static_cast<std::size_t>(clientPublicKeyHex.length()),
+					nullptr,
+					&keyLen,
+					nullptr) != 0) {
+		throw std::runtime_error("Invalid client public key");
+	}
+
+	if (keyLen != crypto_kx_SECRETKEYBYTES) {
+		throw std::runtime_error("Invalid client public key length");
+	}
+
+	if (crypto_kx_server_session_keys(
+					m_sharedSecretKey,
+					m_sharedPublicKey,
+					publicKey,
+					secretKey,
+					clientPublicKey) != 0) {
+		throw std::runtime_error("Invalid client public key");
 	}
 }
 
@@ -56,7 +108,7 @@ QString Crypto::Encrypt(const QString& plainText) const {
 					adLen,
 					nullptr,
 					(buffer + adLen),
-					m_key) != 0) {
+					m_sharedPublicKey) != 0) {
 		delete[] buffer;
 
 		throw std::runtime_error("Encryption failed");
@@ -134,7 +186,7 @@ QString Crypto::Decrypt(const QString& encryptedText) const {
 					buffer,
 					adLen,
 					(buffer + adLen),
-					m_key) != 0) {
+					m_sharedSecretKey) != 0) {
 		delete[] buffer;
 
 		throw std::runtime_error("Decryption failed");
@@ -156,6 +208,76 @@ QString Crypto::Decrypt(const QString& encryptedText) const {
 	delete[] buffer;
 
 	return result;
+}
+
+void Crypto::GenerateKeyPair(QSettings* settings) {
+	unsigned char publicKey[crypto_kx_PUBLICKEYBYTES];
+	unsigned char secretKey[crypto_kx_SECRETKEYBYTES];
+
+	crypto_kx_keypair(publicKey, secretKey);
+
+	QString identifier = GetIdentifier(publicKey);
+
+	size_t publicKeyHexLen = sizeof(publicKey) * 2 + 1;
+	size_t secretKeyHexLen = sizeof(secretKey) * 2 + 1;
+
+	char* keypairBuffer = new char[publicKeyHexLen + secretKeyHexLen];
+
+	sodium_bin2hex(keypairBuffer, publicKeyHexLen, publicKey, sizeof(publicKey));
+	sodium_bin2hex(keypairBuffer + publicKeyHexLen, secretKeyHexLen, secretKey, sizeof(secretKey));
+
+	settings->setValue("public_key", QString(keypairBuffer));
+	settings->setValue("secret_key", QString(keypairBuffer + publicKeyHexLen));
+	settings->setValue("identifier", identifier);
+
+	delete[] keypairBuffer;
+
+	QDir configDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+
+	QFile identifierFile(QDir::cleanPath(configDir.absoluteFilePath(IDENTIFIER_PATH)));
+
+	if (identifierFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+		QTextStream identifierStream(&identifierFile);
+
+		identifierStream << identifier;
+
+		identifierFile.close();
+	} else {
+		spdlog::warn("Failed to write identifier file");
+	}
+
+	spdlog::info(std::string("Key pair generated with identifier: ") + identifier.toStdString());
+}
+
+QString Crypto::GetIdentifier(const unsigned char* publicKey) {
+	unsigned char key[16] = {
+		0x32, 0x65, 0x40, 0x4d, 0x1d, 0x30, 0x66, 0x34,
+		0x29, 0x90, 0xb8, 0x91, 0x8a, 0x8f, 0x5b, 0xa1
+	};
+
+	unsigned char shortHash[crypto_shorthash_BYTES];
+
+	crypto_shorthash(shortHash, publicKey, crypto_kx_PUBLICKEYBYTES, key);
+
+	char shortHashHex[sizeof(shortHash) * 2 + 1];
+
+	sodium_bin2hex(shortHashHex, sizeof(shortHashHex), shortHash, sizeof(shortHash));
+
+	QString identifier(shortHashHex);
+
+	if (identifier.length() % 2 != 0) {
+		identifier.prepend('0');
+	}
+
+	int i = identifier.length() - 2;
+
+	while (i > 0) {
+		identifier.insert(i, ':');
+
+		i -= 2;
+	}
+
+	return QString("[") + identifier.toUpper() + QString("]");
 }
 
 uint64_t Crypto::GetCurrentTime() {
