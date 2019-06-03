@@ -14,7 +14,8 @@ class Server : public QObject {
 		Q_OBJECT
 
 	public:
-		Server(const QString& encryptionKey,
+		Server(const QString& publicKey,
+			   const QString& secretKey,
 			   quint16 port = 0,
 			   const QHostAddress& address = QHostAddress::Any,
 			   QObject* parent = nullptr);

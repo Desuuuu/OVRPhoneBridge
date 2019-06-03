@@ -6,7 +6,8 @@
 #include "server.h"
 #include "common.h"
 
-Server::Server(const QString& encryptionKey,
+Server::Server(const QString& publicKey,
+			   const QString& secretKey,
 			   quint16 port,
 			   const QHostAddress& address,
 			   QObject* parent)
@@ -20,7 +21,8 @@ Server::Server(const QString& encryptionKey,
 	  m_deviceName(QString::null),
 	  m_osType(QString::null),
 	  m_osVersion(QString::null) {
-	m_crypto = new Crypto(encryptionKey);
+	//TODO construct m_crypto during handshake
+	//m_crypto = new Crypto(encryptionKey);
 
 	m_server = new QTcpServer(this);
 
