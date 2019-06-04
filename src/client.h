@@ -33,10 +33,9 @@ class Client : public QObject {
 		bool HasNotifications() const;
 		bool HasSMS() const;
 
-		void SendPublicKey();
-		void SendJsonMessage(const QJsonObject& message);
 		void Kick();
-		void HandshakeResult(bool allow);
+		void SendJsonMessage(const QJsonObject& message);
+		void AnswerHandshake(bool allow);
 
 	private slots:
 		void SocketReadyRead();

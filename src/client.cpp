@@ -110,23 +110,9 @@ bool Client::HasSMS() const {
 	return m_sms;
 }
 
-void Client::SendPublicKey() {
+void Client::Kick() {
 	if (m_socket != nullptr) {
-		if (m_handshakeDone) {
-			spdlog::warn("SendPublicKey: Handshake already done");
-
-			return;
-		}
-
-		if (m_crypto == nullptr) {
-			spdlog::error("SendPublicKey: Encryption not available");
-
-			return;
-		}
-
-		m_socket->write("@@");
-		m_socket->write(m_crypto->GetEncryptedPublicKey().toUtf8());
-		m_socket->write("\n");
+		m_socket->close();
 	}
 }
 
@@ -150,12 +136,6 @@ void Client::SendJsonMessage(const QJsonObject& message) {
 
 		m_socket->write(finalMessage.toUtf8());
 		m_socket->write("\n");
-	}
-}
-
-void Client::Kick() {
-	if (m_socket != nullptr) {
-		m_socket->close();
 	}
 }
 
@@ -205,7 +185,7 @@ void Client::SocketDisconnected() {
 }
 
 void Client::HandshakePhase1(const QString& publicKey) {
-	if (m_handshakeDone || m_crypto != nullptr) {
+	if (m_handshakeDone || m_socket == nullptr || m_crypto != nullptr) {
 		return;
 	}
 
@@ -218,7 +198,9 @@ void Client::HandshakePhase1(const QString& publicKey) {
 		return;
 	}
 
-	SendPublicKey();
+	m_socket->write("@@");
+	m_socket->write(m_crypto->GetEncryptedPublicKey().toUtf8());
+	m_socket->write("\n");
 }
 
 void Client::HandshakePhase2(const QJsonObject& json) {
