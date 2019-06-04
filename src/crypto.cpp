@@ -76,6 +76,8 @@ Crypto::Crypto(const QString& publicKeyHex,
 					m_clientPublicKey) != 0) {
 		throw std::runtime_error("Invalid client public key");
 	}
+
+	m_clientIdentifier = GetIdentifier(m_clientPublicKey);
 }
 
 QString Crypto::Encrypt(const QString& plainText) const {
@@ -230,6 +232,10 @@ QString Crypto::GetEncryptedPublicKey() const {
 	delete[] buffer;
 
 	return encodedStr;
+}
+
+QString Crypto::GetClientIdentifier() const {
+	return m_clientIdentifier;
 }
 
 void Crypto::GenerateKeyPair(QSettings* settings) {
