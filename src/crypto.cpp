@@ -4,6 +4,7 @@
 #include <spdlog/spdlog.h>
 #include <sodium/utils.h>
 #include <sodium/randombytes.h>
+#include <sodium/crypto_box.h>
 #include <sodium/crypto_shorthash.h>
 #include <sodium/crypto_aead_xchacha20poly1305.h>
 
@@ -18,15 +19,13 @@
 Crypto::Crypto(const QString& publicKeyHex,
 			   const QString& secretKeyHex,
 			   const QString& clientPublicKeyHex) {
-	unsigned char publicKey[crypto_kx_PUBLICKEYBYTES];
 	unsigned char secretKey[crypto_kx_SECRETKEYBYTES];
-	unsigned char clientPublicKey[crypto_kx_PUBLICKEYBYTES];
 
 	size_t keyLen;
 
 	if (sodium_hex2bin(
-					publicKey,
-					sizeof(publicKey),
+					m_publicKey,
+					sizeof(m_publicKey),
 					publicKeyHex.toUtf8().constData(),
 					static_cast<std::size_t>(publicKeyHex.length()),
 					nullptr,
@@ -55,8 +54,8 @@ Crypto::Crypto(const QString& publicKeyHex,
 	}
 
 	if (sodium_hex2bin(
-					clientPublicKey,
-					sizeof(clientPublicKey),
+					m_clientPublicKey,
+					sizeof(m_clientPublicKey),
 					clientPublicKeyHex.toUtf8().constData(),
 					static_cast<std::size_t>(clientPublicKeyHex.length()),
 					nullptr,
@@ -72,9 +71,9 @@ Crypto::Crypto(const QString& publicKeyHex,
 	if (crypto_kx_server_session_keys(
 					m_sharedSecretKey,
 					m_sharedPublicKey,
-					publicKey,
+					m_publicKey,
 					secretKey,
-					clientPublicKey) != 0) {
+					m_clientPublicKey) != 0) {
 		throw std::runtime_error("Invalid client public key");
 	}
 }
@@ -114,10 +113,8 @@ QString Crypto::Encrypt(const QString& plainText) const {
 		throw std::runtime_error("Encryption failed");
 	}
 
-	char* encoded = reinterpret_cast<char*>(buffer + adLen + nonceLen + cipherLen);
-
 	QString encodedStr(sodium_bin2base64(
-							   encoded,
+							   reinterpret_cast<char*>(buffer + adLen + nonceLen + cipherLen),
 							   encodedLen,
 							   buffer,
 							   (adLen + nonceLen + static_cast<size_t>(realCipherLen)),
@@ -208,6 +205,31 @@ QString Crypto::Decrypt(const QString& encryptedText) const {
 	delete[] buffer;
 
 	return result;
+}
+
+QString Crypto::GetEncryptedPublicKey() const {
+	size_t adLen = 8;
+	size_t cipherLen = (sizeof(m_publicKey) + crypto_box_SEALBYTES);
+	size_t encodedLen = sodium_base64_encoded_len(
+								(adLen + cipherLen),
+								sodium_base64_VARIANT_ORIGINAL);
+
+	unsigned char* buffer = new unsigned char[adLen + cipherLen + encodedLen];
+
+	writeUInt64BE(buffer, GetCurrentTime());
+
+	crypto_box_seal((buffer + adLen), m_publicKey, sizeof(m_publicKey), m_clientPublicKey);
+
+	QString encodedStr(sodium_bin2base64(
+							   reinterpret_cast<char*>(buffer + adLen + cipherLen),
+							   encodedLen,
+							   buffer,
+							   (adLen + cipherLen),
+							   sodium_base64_VARIANT_ORIGINAL));
+
+	delete[] buffer;
+
+	return encodedStr;
 }
 
 void Crypto::GenerateKeyPair(QSettings* settings) {

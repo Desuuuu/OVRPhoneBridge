@@ -18,10 +18,13 @@ class Crypto {
 		QString Encrypt(const QString& plainText) const;
 		QString Decrypt(const QString& encryptedText) const;
 
+		QString GetEncryptedPublicKey() const;
 		static void GenerateKeyPair(QSettings* settings);
 		static QString GetIdentifier(const unsigned char* publicKey);
 
 	private:
+		unsigned char m_publicKey[crypto_kx_PUBLICKEYBYTES];
+		unsigned char m_clientPublicKey[crypto_kx_PUBLICKEYBYTES];
 		unsigned char m_sharedPublicKey[crypto_kx_SESSIONKEYBYTES];
 		unsigned char m_sharedSecretKey[crypto_kx_SESSIONKEYBYTES];
 
