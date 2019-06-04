@@ -9,6 +9,7 @@ FORMS += src/widgets/main_widget.ui \
 SOURCES += src/main.cpp \
     src/crypto.cpp \
     src/server.cpp \
+    src/client.cpp \
     src/bridge.cpp \
     src/vr_overlay_controller.cpp \
     src/widgets/fade_widget.cpp \
@@ -28,6 +29,7 @@ SOURCES += src/main.cpp \
 HEADERS += src/common.h \
     src/crypto.h \
     src/server.h \
+    src/client.h \
     src/bridge.h \
     src/vr_overlay_controller.h \
     src/widgets/fade_widget.h \

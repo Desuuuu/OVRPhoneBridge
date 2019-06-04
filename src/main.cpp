@@ -314,7 +314,7 @@ int main(int argc, char* argv[]) {
 		if (!desktop) {
 			controller = new VROverlayController(widget);
 		}
-	} catch (std::runtime_error& ex) {
+	} catch (const std::runtime_error& ex) {
 		spdlog::error(ex.what());
 
 		if (!silent) {
