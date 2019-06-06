@@ -61,6 +61,8 @@ void SMSTabWidget::CurrentTabChanged(const Tab& tab) {
 void SMSTabWidget::ServerStateChanged(const ServerState& state) {
 	m_serverState = state;
 
+	setUpdatesEnabled(false);
+
 	ClearContent();
 
 	m_currentNumber = QString::null;
@@ -96,6 +98,8 @@ bool SMSTabWidget::eventFilter(QObject* obj, QEvent* e) {
 }
 
 void SMSTabWidget::UpdateLayout() {
+	setUpdatesEnabled(false);
+
 	switch (m_serverState) {
 		case ServerState::STOPPED:
 			ui->loadingWidget->setVisible(false);
@@ -163,8 +167,10 @@ void SMSTabWidget::UpdateLayout() {
 			break;
 
 		default:
-			return;
+			break;
 	}
+
+	setUpdatesEnabled(true);
 }
 
 void SMSTabWidget::LoadContent() {
@@ -188,11 +194,19 @@ void SMSTabWidget::LoadContent() {
 void SMSTabWidget::ClearContent() {
 	QLayoutItem* item;
 
-	while (ui->contentScrollLayout->count() > 2) {
-		item = ui->contentScrollLayout->takeAt(2);
+	int i = ui->contentScrollLayout->count();
+
+	while (--i >= 1) {
+		item = ui->contentScrollLayout->itemAt(i);
 
 		if (item == nullptr) {
-			break;
+			ui->contentScrollLayout->takeAt(i);
+
+			continue;
+		}
+
+		if (item->spacerItem() != nullptr) {
+			continue;
 		}
 
 		if (item->widget() != nullptr) {
@@ -203,7 +217,7 @@ void SMSTabWidget::ClearContent() {
 			item->layout()->deleteLater();
 		}
 
-		delete item;
+		delete ui->contentScrollLayout->takeAt(i);
 	}
 
 	ui->inputTextEdit->setPlainText("");
@@ -222,7 +236,7 @@ void SMSTabWidget::InsertSMS(const SMS& sms) {
 
 	widget->installEventFilter(this);
 
-	ui->contentScrollLayout->insertWidget(2, widget);
+	ui->contentScrollLayout->insertWidget(1, widget);
 }
 
 void SMSTabWidget::InsertShortSMS(const ShortSMS& shortSms) {
@@ -262,6 +276,8 @@ void SMSTabWidget::SMSList(const std::list<SMS>& list) {
 		return;
 	}
 
+	setUpdatesEnabled(false);
+
 	ClearContent();
 
 	m_currentNumber = QString::null;
@@ -295,11 +311,15 @@ void SMSTabWidget::SMSFromList(const QString& number,
 			return;
 		}
 
+		setUpdatesEnabled(false);
+
 		ClearContent();
 
 		page = 0;
 	} else if (page != m_nextPage) {
 		return;
+	} else {
+		setUpdatesEnabled(false);
 	}
 
 	m_contentEmpty = true;
@@ -324,7 +344,7 @@ void SMSTabWidget::SMSFromList(const QString& number,
 		if (page == 0) {
 			QLabel* emptyLabel = new QLabel("No SMS", ui->contentScrollWidget);
 
-			ui->contentScrollLayout->insertWidget(2, emptyLabel, 1, Qt::AlignHCenter);
+			ui->contentScrollLayout->insertWidget(1, emptyLabel, 1, Qt::AlignHCenter);
 		}
 
 		m_nextPage = 0;
@@ -348,7 +368,7 @@ void SMSTabWidget::SMSFromList(const QString& number,
 	UpdateLayout();
 
 	if (m_savedScroll >= 0) {
-		QTimer::singleShot(1, this, [&]() {
+		QTimer::singleShot(5, this, [&]() {
 			ui->contentScrollArea->verticalScrollBar()->setValue(
 					ui->contentScrollArea->verticalScrollBar()->maximum() - m_savedScroll);
 		});
@@ -370,6 +390,8 @@ void SMSTabWidget::SMSSent(const QString& number, bool success) {
 }
 
 void SMSTabWidget::OpenThread(const QString& number) {
+	setUpdatesEnabled(false);
+
 	ClearContent();
 
 	m_currentNumber = number;
@@ -380,6 +402,8 @@ void SMSTabWidget::OpenThread(const QString& number) {
 }
 
 void SMSTabWidget::on_backButton_clicked() {
+	setUpdatesEnabled(false);
+
 	ClearContent();
 
 	m_currentNumber = QString::null;
@@ -391,6 +415,8 @@ void SMSTabWidget::on_backButton_clicked() {
 }
 
 void SMSTabWidget::on_refreshButton_clicked() {
+	setUpdatesEnabled(false);
+
 	ClearContent();
 
 	UpdateLayout();

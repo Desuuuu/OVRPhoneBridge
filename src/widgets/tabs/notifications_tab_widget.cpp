@@ -56,6 +56,8 @@ void NotificationsTabWidget::CurrentTabChanged(const Tab& tab) {
 void NotificationsTabWidget::ServerStateChanged(const ServerState& state) {
 	m_serverState = state;
 
+	setUpdatesEnabled(false);
+
 	ClearContent();
 
 	UpdateLayout();
@@ -66,6 +68,8 @@ void NotificationsTabWidget::ServerStateChanged(const ServerState& state) {
 }
 
 void NotificationsTabWidget::UpdateLayout() {
+	setUpdatesEnabled(false);
+
 	switch (m_serverState) {
 		case ServerState::STOPPED:
 			ui->loadingWidget->setVisible(false);
@@ -113,8 +117,10 @@ void NotificationsTabWidget::UpdateLayout() {
 			break;
 
 		default:
-			return;
+			break;
 	}
+
+	setUpdatesEnabled(true);
 }
 
 void NotificationsTabWidget::LoadContent() {
@@ -134,11 +140,19 @@ void NotificationsTabWidget::LoadContent() {
 void NotificationsTabWidget::ClearContent() {
 	QLayoutItem* item;
 
-	while (ui->contentScrollLayout->count() > 1) {
-		item = ui->contentScrollLayout->takeAt(0);
+	int i = ui->contentScrollLayout->count();
+
+	while (--i >= 0) {
+		item = ui->contentScrollLayout->itemAt(i);
 
 		if (item == nullptr) {
-			break;
+			ui->contentScrollLayout->takeAt(i);
+
+			continue;
+		}
+
+		if (item->spacerItem() != nullptr) {
+			continue;
 		}
 
 		if (item->widget() != nullptr) {
@@ -149,7 +163,7 @@ void NotificationsTabWidget::ClearContent() {
 			item->layout()->deleteLater();
 		}
 
-		delete item;
+		delete ui->contentScrollLayout->takeAt(i);
 	}
 
 	m_contentLoaded = false;
@@ -172,10 +186,19 @@ void NotificationsTabWidget::InsertNotification(const Notification& notification
 }
 
 void NotificationsTabWidget::RemoveNotification(const QString& key) {
+	QLayoutItem* item;
 	NotificationWidget* widget;
 
-	for (int i = 0; i < ui->contentScrollLayout->count() - 1; ++i) {
-		widget = qobject_cast<NotificationWidget*>(ui->contentScrollLayout->itemAt(i)->widget());
+	int i = ui->contentScrollLayout->count();
+
+	while (--i >= 0) {
+		item = ui->contentScrollLayout->itemAt(i);
+
+		if (item == nullptr || item->widget() == nullptr) {
+			continue;
+		}
+
+		widget = qobject_cast<NotificationWidget*>(item->widget());
 
 		if (widget != nullptr && key == widget->GetKey()) {
 			widget->deleteLater();
@@ -214,6 +237,8 @@ void NotificationsTabWidget::NotificationList(const std::list<Notification>& lis
 		return;
 	}
 
+	setUpdatesEnabled(false);
+
 	ClearContent();
 
 	auto iterator = list.rbegin();
@@ -232,10 +257,19 @@ void NotificationsTabWidget::NotificationList(const std::list<Notification>& lis
 }
 
 void NotificationsTabWidget::on_dismissAllButton_clicked() {
+	QLayoutItem* item;
 	NotificationWidget* widget;
 
-	for (int i = 0; i < ui->contentScrollLayout->count() - 1; ++i) {
-		widget = qobject_cast<NotificationWidget*>(ui->contentScrollLayout->itemAt(i)->widget());
+	int i = ui->contentScrollLayout->count();
+
+	while (--i >= 0) {
+		item = ui->contentScrollLayout->itemAt(i);
+
+		if (item == nullptr || item->widget() == nullptr) {
+			continue;
+		}
+
+		widget = qobject_cast<NotificationWidget*>(item->widget());
 
 		if (widget != nullptr && !widget->IsPersistent()) {
 			emit DismissNotification(widget->GetKey());
@@ -244,6 +278,8 @@ void NotificationsTabWidget::on_dismissAllButton_clicked() {
 }
 
 void NotificationsTabWidget::on_refreshButton_clicked() {
+	setUpdatesEnabled(false);
+
 	ClearContent();
 
 	UpdateLayout();
