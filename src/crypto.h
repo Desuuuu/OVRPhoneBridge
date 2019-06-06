@@ -22,7 +22,6 @@ class Crypto {
 		QString GetClientIdentifier() const;
 
 		static void GenerateKeyPair(QSettings* settings);
-		static QString GetIdentifier(const unsigned char* publicKey);
 
 	private:
 		unsigned char m_publicKey[crypto_kx_PUBLICKEYBYTES];
@@ -33,6 +32,7 @@ class Crypto {
 		unsigned char m_sharedPublicKey[crypto_kx_SESSIONKEYBYTES];
 		unsigned char m_sharedSecretKey[crypto_kx_SESSIONKEYBYTES];
 
+		static QString GetIdentifier(const unsigned char* publicKey);
 		static uint64_t GetCurrentTime();
     static void WriteUInt64BE(unsigned char* dest, const uint64_t& src);
     static uint64_t ReadUInt64BE(const unsigned char* src);

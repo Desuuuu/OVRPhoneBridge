@@ -74,7 +74,7 @@ Crypto::Crypto(const QString& publicKeyHex,
 					m_publicKey,
 					secretKey,
 					m_clientPublicKey) != 0) {
-		throw std::runtime_error("Invalid client public key");
+		throw std::runtime_error("Failed to generate session keys");
 	}
 
 	m_clientIdentifier = GetIdentifier(m_clientPublicKey);
@@ -211,23 +211,23 @@ QString Crypto::Decrypt(const QString& encryptedText) const {
 
 QString Crypto::GetEncryptedPublicKey() const {
 	size_t adLen = 8;
-	size_t cipherLen = (sizeof(m_publicKey) + crypto_box_SEALBYTES);
-	size_t encodedLen = sodium_base64_encoded_len(
-								(adLen + cipherLen),
-								sodium_base64_VARIANT_ORIGINAL);
+	size_t messageLen = adLen + sizeof(m_publicKey);
+	size_t cipherLen = (messageLen + crypto_box_SEALBYTES);
+	size_t encodedLen = cipherLen * 2 + 1;
 
-	unsigned char* buffer = new unsigned char[adLen + cipherLen + encodedLen];
+	unsigned char* buffer = new unsigned char[messageLen + cipherLen + encodedLen];
 
 	writeUInt64BE(buffer, GetCurrentTime());
 
-	crypto_box_seal((buffer + adLen), m_publicKey, sizeof(m_publicKey), m_clientPublicKey);
+	memcpy((buffer + adLen), m_publicKey, sizeof(m_publicKey));
 
-	QString encodedStr(sodium_bin2base64(
-							   reinterpret_cast<char*>(buffer + adLen + cipherLen),
+	crypto_box_seal((buffer + messageLen), buffer, messageLen, m_clientPublicKey);
+
+	QString encodedStr(sodium_bin2hex(
+							   reinterpret_cast<char*>(buffer + messageLen + cipherLen),
 							   encodedLen,
-							   buffer,
-							   (adLen + cipherLen),
-							   sodium_base64_VARIANT_ORIGINAL));
+							   (buffer + messageLen),
+							   cipherLen));
 
 	delete[] buffer;
 
