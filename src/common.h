@@ -25,7 +25,7 @@
 #define DEFAULT_PORT                8888
 #define DEFAULT_AUTOSTART           true
 #define KICK_BANTIME                300U
-#define HANDSHAKE_WINDOW            30U
+#define HANDSHAKE_WINDOW            150U
 
 #define NOTIF_TITLE_MAX_LENGTH      40
 #define NOTIF_TEXT_MAX_LENGTH       250
