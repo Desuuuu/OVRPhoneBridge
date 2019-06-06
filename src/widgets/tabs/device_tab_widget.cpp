@@ -9,11 +9,12 @@ DeviceTabWidget::DeviceTabWidget(QWidget* parent)
 	ui->contentTable->setRowCount(5);
 	ui->contentTable->setColumnCount(2);
 
-	ui->contentTable->setItem(0, 0, new QTableWidgetItem("Name"));
-	ui->contentTable->setItem(1, 0, new QTableWidgetItem("Address"));
-	ui->contentTable->setItem(2, 0, new QTableWidgetItem("Features"));
-	ui->contentTable->setItem(3, 0, new QTableWidgetItem("App version"));
-	ui->contentTable->setItem(4, 0, new QTableWidgetItem("OS"));
+	ui->contentTable->setItem(POSITION_NAME, 0, new QTableWidgetItem("Name"));
+	ui->contentTable->setItem(POSITION_IDENTIFIER, 0, new QTableWidgetItem("Identifier"));
+	ui->contentTable->setItem(POSITION_ADDRESS, 0, new QTableWidgetItem("Address"));
+	ui->contentTable->setItem(POSITION_FEATURES, 0, new QTableWidgetItem("Features"));
+	ui->contentTable->setItem(POSITION_VERSION, 0, new QTableWidgetItem("App version"));
+	ui->contentTable->setItem(POSITION_OS, 0, new QTableWidgetItem("OS"));
 
 	ui->statusLabel->setVisible(false);
 	ui->contentWidget->setVisible(false);
@@ -48,7 +49,7 @@ void DeviceTabWidget::SetFeatures(bool notifications, bool sms) {
 		element->setText(result);
 	}
 
-	ui->contentTable->setItem(2, 1, element);
+	ui->contentTable->setItem(POSITION_FEATURES, 1, element);
 }
 
 void DeviceTabWidget::SetDeviceName(const QString& deviceName) {
@@ -56,7 +57,15 @@ void DeviceTabWidget::SetDeviceName(const QString& deviceName) {
 	element->setFlags(element->flags() & ~Qt::ItemIsEnabled);
 	element->setTextAlignment(Qt::AlignRight);
 
-	ui->contentTable->setItem(0, 1, element);
+	ui->contentTable->setItem(POSITION_NAME, 1, element);
+}
+
+void DeviceTabWidget::SetIdentifier(const QString& identifier) {
+	QTableWidgetItem* element = new QTableWidgetItem(identifier);
+	element->setFlags(element->flags() & ~Qt::ItemIsEnabled);
+	element->setTextAlignment(Qt::AlignRight);
+
+	ui->contentTable->setItem(POSITION_IDENTIFIER, 1, element);
 }
 
 void DeviceTabWidget::SetAddress(const QString& address) {
@@ -64,7 +73,7 @@ void DeviceTabWidget::SetAddress(const QString& address) {
 	element->setFlags(element->flags() & ~Qt::ItemIsEnabled);
 	element->setTextAlignment(Qt::AlignRight);
 
-	ui->contentTable->setItem(1, 1, element);
+	ui->contentTable->setItem(POSITION_ADDRESS, 1, element);
 }
 
 void DeviceTabWidget::SetAppVersion(const QString& version) {
@@ -72,7 +81,7 @@ void DeviceTabWidget::SetAppVersion(const QString& version) {
 	element->setFlags(element->flags() & ~Qt::ItemIsEnabled);
 	element->setTextAlignment(Qt::AlignRight);
 
-	ui->contentTable->setItem(3, 1, element);
+	ui->contentTable->setItem(POSITION_VERSION, 1, element);
 }
 
 void DeviceTabWidget::SetOS(const QString& type, const QString& version) {
@@ -86,7 +95,7 @@ void DeviceTabWidget::SetOS(const QString& type, const QString& version) {
 		element->setText("Unknown");
 	}
 
-	ui->contentTable->setItem(4, 1, element);
+	ui->contentTable->setItem(POSITION_OS, 1, element);
 }
 
 void DeviceTabWidget::ServerStateChanged(const ServerState& state) {

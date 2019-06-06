@@ -225,6 +225,7 @@ void MainWidget::UpdateServerState(const ServerState& state) {
 
 		case ServerState::CONNECTED:
 			m_deviceTab->SetDeviceName(m_server->GetClient()->GetDeviceName());
+			m_deviceTab->SetIdentifier(m_server->GetClient()->GetIdentifier());
 			m_deviceTab->SetAddress(m_server->GetClient()->GetAddressString());
 			m_deviceTab->SetAppVersion(m_server->GetClient()->GetAppVersion());
 			m_deviceTab->SetOS(m_server->GetClient()->GetOSType(),
