@@ -5,10 +5,9 @@
 #include <QObject>
 #include <QString>
 #include <QTcpServer>
-#include <QTcpSocket>
 #include <QJsonObject>
 
-#include "crypto.h"
+#include "client.h"
 
 class Server : public QObject {
 		Q_OBJECT
@@ -23,19 +22,8 @@ class Server : public QObject {
 
 		void Stop();
 
-		QString GetAddress() const;
-		quint16 GetPort() const;
-
 		bool IsConnected() const;
-		QString GetClientAddress() const;
-		quint16 GetClientPort() const;
-
-		bool HasNotifications() const;
-		bool HasSMS() const;
-		QString GetClientAppVersion() const;
-		QString GetClientDeviceName() const;
-		QString GetClientOSType() const;
-		QString GetClientOSVersion() const;
+		const Client* GetClient() const;
 
 	public slots:
 		void SendMessageToClient(const QJsonObject& json);
@@ -43,32 +31,25 @@ class Server : public QObject {
 
 	private slots:
 		void NewConnection();
-		void SocketReadyRead();
-		void SocketDisconnected();
 		void ClearBans();
+		void KickInactiveClients();
+
+		void ClientHandshakePending();
+		void ClientDisconnected();
+		void ClientMessageReceived(const QString& type, const QJsonObject& json);
 
 	signals:
 		void ConnectedChange(bool connected);
 		void MessageReceived(const QString& type, const QJsonObject& json);
 
 	private:
-		Crypto* m_crypto;
+		QString m_publicKey;
+		QString m_secretKey;
+
 		QTcpServer* m_server;
-		QList<QTcpSocket*> m_clients;
-		QTcpSocket* m_client;
+		Client* m_client;
+		QList<Client*> m_clients;
 		QHash<QHostAddress, qint64> m_banList;
-
-		bool m_featureNotifications;
-		bool m_featureSMS;
-		QString m_appVersion;
-		QString m_deviceName;
-		QString m_osType;
-		QString m_osVersion;
-
-		bool SendMessageToSocket(QTcpSocket* socket,
-								 const QJsonObject& json,
-								 std::string* error = nullptr);
-		void ProcessMessage(QTcpSocket* socket, const QString& data);
 };
 
 #endif /* SERVER_H */
