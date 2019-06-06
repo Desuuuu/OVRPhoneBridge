@@ -170,7 +170,7 @@ void Client::AnswerHandshake(bool allow) {
 
 void Client::SocketReadyRead() {
 	while (m_socket != nullptr && m_socket->canReadLine()) {
-		QString data = QString(m_socket->readLine());
+		QString data = QString(m_socket->readLine()).trimmed();
 
 		if (data.length() > 0) {
 			ProcessMessage(data);
