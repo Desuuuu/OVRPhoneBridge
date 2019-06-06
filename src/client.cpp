@@ -233,6 +233,13 @@ void Client::ProcessMessage(const QString& message) {
 		return;
 	}
 
+	if (m_crypto == nullptr) {
+		spdlog::warn("ProcessMessage: Encryption not available");
+
+		Kick();
+		return;
+	}
+
 	QJsonDocument document;
 
 	try {
