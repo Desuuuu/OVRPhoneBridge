@@ -172,6 +172,12 @@ void Server::ClientHandshakePending() {
 		m_client = client;
 
 		client->AnswerHandshake(true);
+
+		QTimer::singleShot(1000, this, [&]() {
+			if (m_client != nullptr) {
+				emit ConnectedChange(true);
+			}
+		});
 	}
 }
 
