@@ -224,15 +224,18 @@ void MainWidget::UpdateServerState(const ServerState& state) {
 			break;
 
 		case ServerState::CONNECTED:
-			m_notificationsTab->SetFeatureEnabled(m_server->HasNotifications());
+			m_deviceTab->SetDeviceName(m_server->GetClient()->GetDeviceName());
+			m_deviceTab->SetAddress(m_server->GetClient()->GetAddressString());
+			m_deviceTab->SetAppVersion(m_server->GetClient()->GetAppVersion());
+			m_deviceTab->SetOS(m_server->GetClient()->GetOSType(),
+							   m_server->GetClient()->GetOSVersion());
 
-			m_smsTab->SetFeatureEnabled(m_server->HasSMS());
+			m_deviceTab->SetFeatures(m_server->GetClient()->HasNotifications(),
+									 m_server->GetClient()->HasSMS());
 
-			m_deviceTab->SetFeatures(m_server->HasNotifications(), m_server->HasSMS());
-			m_deviceTab->SetDeviceName(m_server->GetClientDeviceName());
-			m_deviceTab->SetAddress(m_server->GetClientAddress());
-			m_deviceTab->SetAppVersion(m_server->GetClientAppVersion());
-			m_deviceTab->SetOS(m_server->GetClientOSType(), m_server->GetClientOSVersion());
+			m_notificationsTab->SetFeatureEnabled(m_server->GetClient()->HasNotifications());
+
+			m_smsTab->SetFeatureEnabled(m_server->GetClient()->HasSMS());
 
 			ui->statusLabel->setText("<font color='#52a93e'>Connected</font>");
 			break;
