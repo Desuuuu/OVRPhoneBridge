@@ -16,7 +16,8 @@ class Client : public QObject {
 			   QObject* parent = nullptr);
 		~Client();
 
-		QString GetAddress() const;
+		QHostAddress GetAddress() const;
+		QString GetAddressString() const;
 		quint16 GetPort() const;
 
 		qint64 GetConnectTime() const;

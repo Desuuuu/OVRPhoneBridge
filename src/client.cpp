@@ -43,7 +43,15 @@ Client::~Client() {
 	}
 }
 
-QString Client::GetAddress() const {
+QHostAddress Client::GetAddress() const {
+	if (m_socket == nullptr) {
+		return QHostAddress::Null;
+	}
+
+	return m_socket->peerAddress();
+}
+
+QString Client::GetAddressString() const {
 	if (m_socket == nullptr) {
 		return QString::null;
 	}
@@ -180,8 +188,6 @@ void Client::SocketDisconnected() {
 	}
 
 	emit Disconnected();
-
-	deleteLater();
 }
 
 void Client::HandshakePhase1(const QString& publicKey) {
