@@ -6,6 +6,7 @@
 #include <QApplication>
 #include <QStandardPaths>
 
+#include <sodium/core.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 
 #include "common.h"
@@ -250,6 +251,16 @@ int main(int argc, char* argv[]) {
 			error.insert(0, "Failed to initialize logger: ");
 
 			QMessageBox::critical(nullptr, APP_NAME, error.c_str());
+		}
+
+		exit(EXIT_FAILURE);
+	}
+
+	if (sodium_init() == -1) {
+		spdlog::error("Failed to initialize libsodium");
+
+		if (!silent) {
+			QMessageBox::critical(nullptr, APP_NAME, "Failed to initialize libsodium");
 		}
 
 		exit(EXIT_FAILURE);
