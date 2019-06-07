@@ -217,7 +217,7 @@ QString Crypto::GetEncryptedPublicKey() const {
 
 	unsigned char* buffer = new unsigned char[messageLen + cipherLen + encodedLen];
 
-	writeUInt64BE(buffer, GetCurrentTime());
+	WriteUInt64BE(buffer, GetCurrentTime());
 
 	memcpy((buffer + adLen), m_publicKey, sizeof(m_publicKey));
 
