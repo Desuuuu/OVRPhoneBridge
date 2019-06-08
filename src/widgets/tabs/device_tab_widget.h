@@ -2,8 +2,8 @@
 #define DEVICE_TAB_WIDGET_H
 
 #define POSITION_NAME       0
-#define POSITION_IDENTIFIER 1
-#define POSITION_ADDRESS    2
+#define POSITION_ADDRESS    1
+#define POSITION_IDENTIFIER 2
 #define POSITION_FEATURES   3
 #define POSITION_VERSION    4
 #define POSITION_OS         5
