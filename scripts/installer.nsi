@@ -35,6 +35,8 @@ RequestExecutionLevel admin
 InstallDirRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
 		"InstallLocation"
 
+!define MUI_ABORTWARNING
+
 !define MUI_ICON "${SRC_DIR}\icon.ico"
 
 Name "${APP_NAME}"
