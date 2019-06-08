@@ -264,6 +264,12 @@ void Crypto::GenerateKeyPair(QSettings* settings) {
 
 	QFile identifierFile(QDir::cleanPath(configDir.absoluteFilePath(IDENTIFIER_PATH)));
 
+	QFileDevice::Permissions permissions = identifierFile.permissions();
+
+	permissions |= QFileDevice::WriteOwner | QFileDevice::WriteUser;
+
+	identifierFile.setPermissions(permissions);
+
 	if (identifierFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
 		QTextStream identifierStream(&identifierFile);
 
@@ -273,6 +279,13 @@ void Crypto::GenerateKeyPair(QSettings* settings) {
 	} else {
 		spdlog::warn("Failed to write identifier file");
 	}
+
+	permissions &= ~(QFileDevice::WriteOwner
+					 | QFileDevice::WriteUser
+					 | QFileDevice::WriteGroup
+					 | QFileDevice::WriteOther);
+
+	identifierFile.setPermissions(permissions);
 
 	spdlog::info(std::string("Key pair generated with identifier: ") + identifier.toStdString());
 }
