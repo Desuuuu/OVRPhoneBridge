@@ -1,3 +1,5 @@
+!include "MUI2.nsh"
+
 !define APP_NAME "OVRPhoneBridge"
 
 !define UPDATE_URL "https://github.com/Desuuuu/OVRPhoneBridge/releases"
@@ -33,17 +35,19 @@ RequestExecutionLevel admin
 InstallDirRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
 		"InstallLocation"
 
-LicenseData "${LICENSE_PATH}"
+!define MUI_ICON "${SRC_DIR}\icon.ico"
 
 Name "${APP_NAME}"
-Icon "${SRC_DIR}\icon.ico"
 OutFile "${OUTPUT_FILE}"
 
-Page license
-Page directory
-Page instfiles
-UninstPage uninstConfirm
-UninstPage instfiles
+!insertmacro MUI_PAGE_LICENSE "${LICENSE_PATH}"
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+
+!insertmacro MUI_LANGUAGE "English"
 
 !macro KillProcess
 	DetailPrint "Stopping OVRPhoneBridge process..."
