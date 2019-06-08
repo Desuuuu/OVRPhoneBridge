@@ -98,6 +98,14 @@ Section "Install"
 
 	File /r ${SRC_DIR}\*.*
 
+  DetailPrint "Generating key pair..."
+
+  ClearErrors
+  ExecWait '"$INSTDIR\${EXE_NAME}" --silent --generate_keypair'
+
+  IfErrors 0 +2
+    DetailPrint "Failed to generate key pair"
+
 	DetailPrint "Installing VR manifest..."
 
 	ClearErrors
