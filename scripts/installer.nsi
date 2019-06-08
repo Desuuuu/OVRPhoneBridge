@@ -37,6 +37,10 @@ InstallDirRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP
 
 !define MUI_ABORTWARNING
 
+!define MUI_FINISHPAGE_NOAUTOCLOSE
+!define MUI_FINISHPAGE_SHOWREADME $APPDATA\OVRPhoneBridge\identifier.txt
+!define MUI_FINISHPAGE_SHOWREADME_TEXT "Show identifier"
+
 !define MUI_ICON "${SRC_DIR}\icon.ico"
 
 Name "${APP_NAME}"
@@ -45,6 +49,7 @@ OutFile "${OUTPUT_FILE}"
 !insertmacro MUI_PAGE_LICENSE "${LICENSE_PATH}"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
 
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
