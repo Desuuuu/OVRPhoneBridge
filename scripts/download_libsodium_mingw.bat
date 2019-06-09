@@ -30,6 +30,10 @@ echo.
 
 tar -xf libsodium-%LIBSODIUM_VERSION%-mingw.tar.gz || goto :error
 
+echo.
+echo Libsodium %LIBSODIUM_VERSION% downloaded successfully!
+echo.
+
 endlocal
 
 echo %cmdcmdline% | findstr /i /c:"%~nx0" >nul && pause
