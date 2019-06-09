@@ -1,0 +1,9 @@
+[submodule "thirdparty/openvr"]
+	path = thirdparty/openvr
+	url = https://github.com/ValveSoftware/openvr
+[submodule "thirdparty/libsodium"]
+	path = thirdparty/libsodium
+	url = https://github.com/jedisct1/libsodium
+[submodule "thirdparty/spdlog"]
+	path = thirdparty/spdlog
+	url = https://github.com/gabime/spdlog
