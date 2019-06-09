@@ -77,7 +77,7 @@ echo.
 xcopy /e /y %BUILD_TARGET%\OVRPhoneBridge.exe %PACKAGE_DIR% || goto :error
 xcopy /e /y "%PROJECT_ROOT%\bundle\all\*" %PACKAGE_DIR% || goto :error
 xcopy /e /y "%PROJECT_ROOT%\bundle\windows\*" %PACKAGE_DIR% || goto :error
-xcopy /e /y "%PROJECT_ROOT%\thirdparty\libsodium\bin\%BUILD_ARCH%\*.dll" %PACKAGE_DIR% || goto :error
+xcopy /e /y "%PROJECT_ROOT%\thirdparty\libsodium\libsodium-%BUILD_ARCH%\bin\*.dll" %PACKAGE_DIR% || goto :error
 xcopy /e /y "%PROJECT_ROOT%\thirdparty\openvr\bin\%BUILD_ARCH%\*.dll" %PACKAGE_DIR% || goto :error
 
 echo.
