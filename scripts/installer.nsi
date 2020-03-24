@@ -18,6 +18,10 @@ RequestExecutionLevel admin
 	!error "EXE_NAME is not defined"
 !endif
 
+!ifndef ICON_PATH
+	!error "ICON_PATH is not defined"
+!endif
+
 !ifndef LICENSE_PATH
 	!error "LICENSE_PATH is not defined"
 !endif
@@ -35,19 +39,26 @@ RequestExecutionLevel admin
 InstallDirRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
 		"InstallLocation"
 
+!define MUI_ICON "${SRC_DIR}\${ICON_PATH}"
+
 !define MUI_ABORTWARNING
 
 !define MUI_FINISHPAGE_NOAUTOCLOSE
 !define MUI_FINISHPAGE_SHOWREADME $APPDATA\OVRPhoneBridge\identifier.txt
 !define MUI_FINISHPAGE_SHOWREADME_TEXT "Show identifier"
 
-!define MUI_ICON "${SRC_DIR}\icon.ico"
+!define MUI_STARTMENUPAGE_REGISTRY_ROOT "HKLM"
+!define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
+!define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "StartMenuFolder"
 
 Name "${APP_NAME}"
 OutFile "${OUTPUT_FILE}"
 
-!insertmacro MUI_PAGE_LICENSE "${LICENSE_PATH}"
+Var StartMenuFolder
+
+!insertmacro MUI_PAGE_LICENSE "${SRC_DIR}\${LICENSE_PATH}"
 !insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 
@@ -103,13 +114,13 @@ Section "Install"
 
 	File /r ${SRC_DIR}\*.*
 
-  DetailPrint "Generating key pair..."
+	DetailPrint "Generating key pair..."
 
-  ClearErrors
-  ExecWait '"$INSTDIR\${EXE_NAME}" --silent --generate_keypair'
+	ClearErrors
+	ExecWait '"$INSTDIR\${EXE_NAME}" --silent --generate_keypair'
 
-  IfErrors 0 +2
-    DetailPrint "Failed to generate key pair"
+	IfErrors 0 +2
+		DetailPrint "Failed to generate key pair"
 
 	DetailPrint "Installing VR manifest..."
 
@@ -120,6 +131,16 @@ Section "Install"
 		DetailPrint "Failed to install VR manifest"
 
 	WriteUninstaller "$INSTDIR\uninstall.exe"
+
+	SetShellVarContext all
+
+	!insertmacro MUI_STARTMENU_WRITE_BEGIN Application
+
+		CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${APP_NAME}.lnk" "$INSTDIR\${EXE_NAME}"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
+
+	!insertmacro MUI_STARTMENU_WRITE_END
 
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
 		"DisplayName" "${APP_NAME}"
@@ -134,7 +155,7 @@ Section "Install"
 		"InstallLocation" "$\"$INSTDIR$\""
 
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
-		"DisplayIcon" "$\"$INSTDIR\icon.ico$\""
+		"DisplayIcon" "$\"$INSTDIR\${ICON_PATH}$\""
 
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
 		"URLUpdateInfo" "${UPDATE_URL}"
@@ -172,6 +193,15 @@ Section "un.Uninstall"
 
 	IfErrors 0 +2
 		DetailPrint "Failed to uninstall VR manifest"
+
+	SetShellVarContext all
+
+	!insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder
+
+	IfFileExists "$SMPROGRAMS\$StartMenuFolder" 0 +4
+		Delete "$SMPROGRAMS\$StartMenuFolder\${APP_NAME}.lnk"
+		Delete "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk"
+		RMDir "$SMPROGRAMS\$StartMenuFolder"
 
 	!include uninstall.nsh
 
