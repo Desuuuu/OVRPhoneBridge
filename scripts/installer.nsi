@@ -207,8 +207,9 @@ Section "un.Uninstall"
 
 	SetShellVarContext current
 
-	StrCmp $UNINSTALL_PURGE "1" 0 +4
+	StrCmp $UNINSTALL_PURGE "1" 0 +5
 		Delete $APPDATA\OVRPhoneBridge\settings.ini
+		Delete $APPDATA\OVRPhoneBridge\identifier.txt
 		Delete $APPDATA\OVRPhoneBridge\OVRPhoneBridge.log
 		RMDir $APPDATA\OVRPhoneBridge
 
