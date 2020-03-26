@@ -60,7 +60,10 @@ echo.
 echo Running make
 echo.
 
-mingw32-make -j4 || goto :error
+if not defined NCORE set NCORE=%NUMBER_OF_PROCESSORS%
+if "%NCORE%" == "" set NCORE=%NUMBER_OF_PROCESSORS%
+
+mingw32-make -j%NCORE% || goto :error
 
 set PACKAGE_DIR=package_%BUILD_TARGET%
 
