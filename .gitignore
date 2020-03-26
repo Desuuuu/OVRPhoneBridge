@@ -1,6 +1,6 @@
 build
 dist
-scripts/release.bat
+scripts/env.*.bat
 
 *~
 *.autosave
@@ -71,4 +71,3 @@ Thumbs.db
 # --------
 *.dll
 *.exe
-
