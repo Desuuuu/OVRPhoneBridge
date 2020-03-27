@@ -16,8 +16,8 @@ SMSTabWidget::SMSTabWidget(QWidget* parent)
 	  m_serverState(ServerState::NONE),
 	  m_featureEnabled(false),
 	  m_retryTimer(nullptr),
-	  m_currentNumber(QString::null),
-	  m_currentName(QString::null),
+	  m_currentNumber(QString()),
+	  m_currentName(QString()),
 	  m_contentLoaded(false),
 	  m_contentEmpty(true),
 	  m_nextPage(0),
@@ -65,8 +65,8 @@ void SMSTabWidget::ServerStateChanged(const ServerState& state) {
 
 	ClearContent();
 
-	m_currentNumber = QString::null;
-	m_currentName = QString::null;
+	m_currentNumber = QString();
+	m_currentName = QString();
 
 	UpdateLayout();
 
@@ -280,8 +280,8 @@ void SMSTabWidget::SMSList(const std::list<SMS>& list) {
 
 	ClearContent();
 
-	m_currentNumber = QString::null;
-	m_currentName = QString::null;
+	m_currentNumber = QString();
+	m_currentName = QString();
 
 	auto iterator = list.rbegin();
 
@@ -406,8 +406,8 @@ void SMSTabWidget::on_backButton_clicked() {
 
 	ClearContent();
 
-	m_currentNumber = QString::null;
-	m_currentName = QString::null;
+	m_currentNumber = QString();
+	m_currentName = QString();
 
 	UpdateLayout();
 

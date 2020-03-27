@@ -19,10 +19,10 @@ Client::Client(const QString* serverPublicKey,
 	  m_connectTime(QDateTime::currentSecsSinceEpoch()),
 	  m_handshakeDone(false),
 	  m_crypto(nullptr),
-	  m_appVersion(QString::null),
-	  m_deviceName(QString::null),
-	  m_osType(QString::null),
-	  m_osVersion(QString::null),
+	  m_appVersion(QString()),
+	  m_deviceName(QString()),
+	  m_osType(QString()),
+	  m_osVersion(QString()),
 	  m_notifications(false),
 	  m_sms(false) {
 	connect(m_socket, &QTcpSocket::readyRead, this, &Client::SocketReadyRead);
@@ -53,7 +53,7 @@ QHostAddress Client::GetAddress() const {
 
 QString Client::GetAddressString() const {
 	if (m_socket == nullptr) {
-		return QString::null;
+		return QString();
 	}
 
 	bool ok;
@@ -96,7 +96,7 @@ QString Client::GetDeviceName() const {
 
 QString Client::GetIdentifier() const {
 	if (m_crypto == nullptr) {
-		return QString::null;
+		return QString();
 	}
 
 	return m_crypto->GetClientIdentifier();
