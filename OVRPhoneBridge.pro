@@ -22,6 +22,7 @@ macx:ICON = images/icons/icon.icns
 include(spdlog.pri)
 include(libsodium.pri)
 include(openvr.pri)
+include(eigen.pri)
 include(sources.pri)
 
 write_file($$top_builddir/version.txt, VERSION)

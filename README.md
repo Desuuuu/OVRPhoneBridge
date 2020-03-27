@@ -27,6 +27,7 @@ Instructions about using this software are available in [HOWTO.md](/HOWTO.md).
 * [OpenVR](https://github.com/ValveSoftware/openvr)
 * [spdlog](https://github.com/gabime/spdlog)
 * [libsodium](https://github.com/jedisct1/libsodium)
+* [Eigen](https://gitlab.com/libeigen/eigen)
 
 ## License
 [GPLv3](http://www.gnu.org/licenses/gpl-3.0.html)
