@@ -10,23 +10,27 @@
 
 #include <spdlog/spdlog.h>
 
-#include "vr_overlay_controller.h"
-#include "common.h"
+#include "../common.h"
+#include "overlay_controller.h"
 
-VROverlayController::VROverlayController(QWidget* widget)
+using namespace vr;
+using namespace OpenVR;
+
+OverlayController::OverlayController(QWidget* widget)
 	: QObject(),
 	  m_context(nullptr),
 	  m_surface(nullptr),
 	  m_scene(nullptr),
 	  m_frameBuffer(nullptr),
-	  m_overlayHandle(vr::k_ulOverlayHandleInvalid),
-	  m_overlayThumbnailHandle(vr::k_ulOverlayHandleInvalid),
+	  m_overlayHandle(k_ulOverlayHandleInvalid),
+	  m_overlayThumbnailHandle(k_ulOverlayHandleInvalid),
 	  m_widget(widget),
 	  m_lastPosition(0, 0),
 	  m_lastButtons(Qt::NoButton),
 	  m_renderRequested(false),
-	  m_overlayVisible(false) {
-	if (!vr::VR_IsHmdPresent()) {
+	  m_overlayVisible(false),
+	  m_keyboardVisible(false) {
+	if (!VR_IsHmdPresent()) {
 		throw std::runtime_error("HMD not found");
 	}
 
@@ -36,12 +40,12 @@ VROverlayController::VROverlayController(QWidget* widget)
 		throw std::runtime_error(error);
 	}
 
-	if (!InitVRRuntime(vr::VRApplication_Overlay, &error)) {
+	if (!InitVRRuntime(VRApplication_Overlay, &error)) {
 		throw std::runtime_error(error);
 	}
 
-	if (!vr::VR_IsInterfaceVersionValid(vr::IVROverlay_Version)
-			|| !vr::VR_IsInterfaceVersionValid(vr::IVRNotifications_Version)) {
+	if (!VR_IsInterfaceVersionValid(IVROverlay_Version)
+			|| !VR_IsInterfaceVersionValid(IVRNotifications_Version)) {
 		throw std::runtime_error("Incompatible OpenVR version");
 	}
 
@@ -68,13 +72,13 @@ VROverlayController::VROverlayController(QWidget* widget)
 
 	QTimer* eventTimer = new QTimer(this);
 
-	connect(eventTimer, &QTimer::timeout, this, &VROverlayController::PollEvents);
+	connect(eventTimer, &QTimer::timeout, this, &OverlayController::PollEvents);
 
 	eventTimer->setInterval(20);
 	eventTimer->start();
 }
 
-VROverlayController::~VROverlayController() {
+OverlayController::~OverlayController() {
 	ShutdownVRRuntime();
 
 	if (m_notificationBitmap.m_pImageData != nullptr) {
@@ -85,7 +89,7 @@ VROverlayController::~VROverlayController() {
 	CleanupOpenGL();
 }
 
-bool VROverlayController::InitOpenGL(std::string* error) {
+bool OverlayController::InitOpenGL(std::string* error) {
 	QSurfaceFormat format;
 
 	format.setVersion(2, 1);
@@ -119,18 +123,18 @@ bool VROverlayController::InitOpenGL(std::string* error) {
 	return true;
 }
 
-void VROverlayController::CleanupOpenGL() {
+void OverlayController::CleanupOpenGL() {
 	m_frameBuffer.reset(nullptr);
 	m_scene.reset(nullptr);
 	m_context.reset(nullptr);
 	m_surface.reset(nullptr);
 }
 
-bool VROverlayController::ShowNotification(const std::string& identifier,
-										   const std::string& text,
-										   bool sound,
-										   bool persistent) {
-	vr::IVRNotifications* notifications = vr::VRNotifications();
+bool OverlayController::ShowNotification(const std::string& identifier,
+										 const std::string& text,
+										 bool sound,
+										 bool persistent) {
+	IVRNotifications* notifications = VRNotifications();
 
 	if (notifications == nullptr) {
 		spdlog::error("ShowNotification: IVRNotifications interface not available");
@@ -144,11 +148,11 @@ bool VROverlayController::ShowNotification(const std::string& identifier,
 		RemoveNotification(identifier);
 	}
 
-	vr::VRNotificationId notificationId;
+	VRNotificationId notificationId;
 
-	vr::EVRNotificationError notificationError;
+	EVRNotificationError notificationError;
 
-	vr::NotificationBitmap_t* notificationBitmap = nullptr;
+	NotificationBitmap_t* notificationBitmap = nullptr;
 
 	if (m_notificationBitmap.m_pImageData != nullptr) {
 		notificationBitmap = &m_notificationBitmap;
@@ -156,22 +160,22 @@ bool VROverlayController::ShowNotification(const std::string& identifier,
 
 	std::string formattedText = text;
 
-	if (formattedText.length() > vr::k_unNotificationTextMaxSize) {
-		formattedText = formattedText.substr(0, vr::k_unNotificationTextMaxSize - 3) + "...";
+	if (formattedText.length() > k_unNotificationTextMaxSize) {
+		formattedText = formattedText.substr(0, k_unNotificationTextMaxSize - 3) + "...";
 	}
 
 	notificationError = notifications->CreateNotification(
 								m_overlayHandle,
-								VR_CONTROLLER_USERVALUE,
+								USER_VALUE,
 								(persistent ?
-								 vr::EVRNotificationType_Persistent
-								 : vr::EVRNotificationType_Transient),
+								 EVRNotificationType_Persistent
+								 : EVRNotificationType_Transient),
 								formattedText.c_str(),
-								vr::EVRNotificationStyle_Application,
+								EVRNotificationStyle_Application,
 								notificationBitmap,
 								&notificationId);
 
-	if (notificationError != vr::VRNotificationError_OK) {
+	if (notificationError != VRNotificationError_OK) {
 		spdlog::error(std::string("ShowNotification: IVRNotifications: Error ")
 					  + std::to_string(notificationError));
 
@@ -186,15 +190,15 @@ bool VROverlayController::ShowNotification(const std::string& identifier,
 		m_notificationSound.play();
 	}
 
-	m_notifications.insert(std::pair<std::string, vr::VRNotificationId>(
+	m_notifications.insert(std::pair<std::string, VRNotificationId>(
 								   identifier,
 								   notificationId));
 
 	return true;
 }
 
-bool VROverlayController::RemoveNotification(const std::string& identifier) {
-	vr::IVRNotifications* notifications = vr::VRNotifications();
+bool OverlayController::RemoveNotification(const std::string& identifier) {
+	IVRNotifications* notifications = VRNotifications();
 
 	if (notifications == nullptr) {
 		spdlog::error("RemoveNotification: IVRNotifications interface not available");
@@ -208,12 +212,12 @@ bool VROverlayController::RemoveNotification(const std::string& identifier) {
 		return true;
 	}
 
-	vr::EVRNotificationError notificationError;
+	EVRNotificationError notificationError;
 
 	notificationError = notifications->RemoveNotification(iterator->second);
 
-	if (notificationError != vr::VRNotificationError_OK
-			&& notificationError != vr::VRNotificationError_InvalidNotificationId) {
+	if (notificationError != VRNotificationError_OK
+			&& notificationError != VRNotificationError_InvalidNotificationId) {
 		spdlog::error(std::string("RemoveNotification: IVRNotifications: Error ")
 					  + std::to_string(notificationError));
 
@@ -225,13 +229,13 @@ bool VROverlayController::RemoveNotification(const std::string& identifier) {
 	return true;
 }
 
-bool VROverlayController::ShowKeyboard(uint8_t identifier,
-									   uint32_t maxLen,
-									   const char* initialText,
-									   const char* description,
-									   bool singleLine,
-									   bool password) {
-	vr::IVROverlay* overlay = vr::VROverlay();
+bool OverlayController::ShowKeyboard(uint8_t identifier,
+									 uint32_t maxLen,
+									 const char* initialText,
+									 const char* description,
+									 bool singleLine,
+									 bool password) {
+	IVROverlay* overlay = VROverlay();
 
 	if (overlay == nullptr) {
 		spdlog::error("ShowKeyboard: IVROverlay interface not available");
@@ -239,26 +243,34 @@ bool VROverlayController::ShowKeyboard(uint8_t identifier,
 		return false;
 	}
 
-	vr::EGamepadTextInputMode inputMode = (password ?
-										   vr::k_EGamepadTextInputModePassword
-										   : vr::k_EGamepadTextInputModeNormal);
+	IVRCompositor* compositor = VRCompositor();
 
-	vr::EGamepadTextInputLineMode lineMode = (singleLine ?
-											  vr::k_EGamepadTextInputLineModeSingleLine
-											  : vr::k_EGamepadTextInputLineModeMultipleLines);
+	if (compositor == nullptr) {
+		spdlog::error("ShowKeyboard: IVRCompositor interface not available");
 
-	vr::VROverlayError overlayError;
+		return false;
+	}
+
+	EGamepadTextInputMode inputMode = (password ?
+									   k_EGamepadTextInputModePassword
+									   : k_EGamepadTextInputModeNormal);
+
+	EGamepadTextInputLineMode lineMode = (singleLine ?
+										  k_EGamepadTextInputLineModeSingleLine
+										  : k_EGamepadTextInputLineModeMultipleLines);
+
+	VROverlayError overlayError;
 
 	overlayError = overlay->ShowKeyboardForOverlay(m_overlayHandle,
 												   inputMode,
 												   lineMode,
+												   KeyboardFlag_Modal,
 												   description,
 												   maxLen,
 												   initialText,
-												   false,
-												   (VR_CONTROLLER_USERVALUE + identifier));
+												   (USER_VALUE + identifier));
 
-	if (overlayError != vr::VROverlayError_None) {
+	if (overlayError != VROverlayError_None) {
 		spdlog::error(std::string("ShowKeyboard: IVROverlay: ")
 					  + overlay->GetOverlayErrorNameFromEnum(overlayError));
 
@@ -268,8 +280,8 @@ bool VROverlayController::ShowKeyboard(uint8_t identifier,
 	return true;
 }
 
-bool VROverlayController::HideKeyboard() {
-	vr::IVROverlay* overlay = vr::VROverlay();
+bool OverlayController::HideKeyboard() {
+	IVROverlay* overlay = VROverlay();
 
 	if (overlay == nullptr) {
 		spdlog::error("HideKeyboard: IVROverlay interface not available");
@@ -282,8 +294,8 @@ bool VROverlayController::HideKeyboard() {
 	return true;
 }
 
-bool VROverlayController::SetupOverlay(std::string* error) {
-	vr::IVROverlay* overlay = vr::VROverlay();
+bool OverlayController::SetupOverlay(std::string* error) {
+	IVROverlay* overlay = VROverlay();
 
 	if (overlay == nullptr) {
 		if (error != nullptr) {
@@ -293,7 +305,7 @@ bool VROverlayController::SetupOverlay(std::string* error) {
 		return false;
 	}
 
-	vr::VROverlayError overlayError;
+	VROverlayError overlayError;
 
 	overlayError = overlay->CreateDashboardOverlay(
 						   MANIFEST_KEY,
@@ -301,7 +313,7 @@ bool VROverlayController::SetupOverlay(std::string* error) {
 						   &m_overlayHandle,
 						   &m_overlayThumbnailHandle);
 
-	if (overlayError != vr::VROverlayError_None) {
+	if (overlayError != VROverlayError_None) {
 		if (error != nullptr) {
 			*error = std::string("IVROverlay: ")
 					 + overlay->GetOverlayErrorNameFromEnum(overlayError);
@@ -312,9 +324,9 @@ bool VROverlayController::SetupOverlay(std::string* error) {
 
 	m_overlayVisible = false;
 
-	overlay->SetOverlayWidthInMeters(m_overlayHandle, 2.35f);
-	overlay->SetOverlayInputMethod(m_overlayHandle, vr::VROverlayInputMethod_Mouse);
-	overlay->SetOverlayFlag(m_overlayHandle, vr::VROverlayFlags_SendVRSmoothScrollEvents, true);
+	overlay->SetOverlayWidthInMeters(m_overlayHandle, 3.0f);
+	overlay->SetOverlayInputMethod(m_overlayHandle, VROverlayInputMethod_Mouse);
+	overlay->SetOverlayFlag(m_overlayHandle, VROverlayFlags_SendVRSmoothScrollEvents, true);
 
 	QString overlayThumbnailPath = QDir::cleanPath(QDir(qApp->applicationDirPath())
 												   .absoluteFilePath(OVERLAY_THUMB_PATH));
@@ -329,7 +341,7 @@ bool VROverlayController::SetupOverlay(std::string* error) {
 	return true;
 }
 
-void VROverlayController::LoadNotificationAssets() {
+void OverlayController::LoadNotificationAssets() {
 	m_notificationSound.setSource(QUrl("qrc:///sounds/notification.wav"));
 	m_notificationSound.setLoopCount(0);
 	m_notificationSound.setVolume(0.4);
@@ -352,8 +364,8 @@ void VROverlayController::LoadNotificationAssets() {
 	}
 }
 
-bool VROverlayController::SetupWidget(std::string* error) {
-	vr::IVROverlay* overlay = vr::VROverlay();
+bool OverlayController::SetupWidget(std::string* error) {
+	IVROverlay* overlay = VROverlay();
 
 	if (overlay == nullptr) {
 		if (error != nullptr) {
@@ -375,7 +387,7 @@ bool VROverlayController::SetupWidget(std::string* error) {
 													 m_widget->height(),
 													 bufferFormat));
 
-	vr::HmdVector2_t widgetSize = {
+	HmdVector2_t widgetSize = {
 		static_cast<float>(m_widget->width()),
 		static_cast<float>(m_widget->height())
 	};
@@ -385,12 +397,12 @@ bool VROverlayController::SetupWidget(std::string* error) {
 	return true;
 }
 
-void VROverlayController::RenderOverlay() {
-	vr::IVROverlay* overlay = vr::VROverlay();
+void OverlayController::RenderOverlay() {
+	IVROverlay* overlay = VROverlay();
 
 	if (overlay == nullptr
-			|| m_overlayHandle == vr::k_ulOverlayHandleInvalid
-			|| m_overlayThumbnailHandle == vr::k_ulOverlayHandleInvalid) {
+			|| m_overlayHandle == k_ulOverlayHandleInvalid
+			|| m_overlayThumbnailHandle == k_ulOverlayHandleInvalid) {
 		return;
 	}
 
@@ -414,10 +426,10 @@ void VROverlayController::RenderOverlay() {
 	GLuint textureId = m_frameBuffer->texture();
 
 	if (textureId != 0) {
-		vr::Texture_t texture = {
+		Texture_t texture = {
 			reinterpret_cast<void*>(textureId),
-			vr::TextureType_OpenGL,
-			vr::ColorSpace_Auto
+			TextureType_OpenGL,
+			ColorSpace_Auto
 		};
 
 		overlay->SetOverlayTexture(m_overlayHandle, &texture);
@@ -426,19 +438,19 @@ void VROverlayController::RenderOverlay() {
 	m_context->functions()->glFlush();
 }
 
-void VROverlayController::PollEvents() {
-	vr::IVROverlay* overlay = vr::VROverlay();
+void OverlayController::PollEvents() {
+	IVROverlay* overlay = VROverlay();
 
 	if (overlay == nullptr) {
 		return;
 	}
 
-	vr::VREvent_t event;
+	VREvent_t event;
 
-	if (m_overlayHandle != vr::k_ulOverlayHandleInvalid) {
+	if (m_overlayHandle != k_ulOverlayHandleInvalid) {
 		while (overlay->PollNextOverlayEvent(m_overlayHandle, &event, sizeof(event))) {
 			switch (event.eventType) {
-				case vr::VREvent_MouseMove: {
+				case VREvent_MouseMove: {
 					QPointF newPosition(static_cast<qreal>(event.data.mouse.x),
 										static_cast<qreal>(event.data.mouse.y));
 
@@ -466,14 +478,14 @@ void VROverlayController::PollEvents() {
 					break;
 				}
 
-				case vr::VREvent_MouseButtonDown: {
+				case VREvent_MouseButtonDown: {
 					QPointF newPosition(static_cast<qreal>(event.data.mouse.x),
 										static_cast<qreal>(event.data.mouse.y));
 
 					QPoint newPositionInt = newPosition.toPoint();
 					QPoint lastPositionInt = m_lastPosition.toPoint();
 
-					Qt::MouseButton button = (event.data.mouse.button == vr::VRMouseButton_Right) ?
+					Qt::MouseButton button = (event.data.mouse.button == VRMouseButton_Right) ?
 											 Qt::RightButton
 											 : Qt::LeftButton;
 
@@ -503,14 +515,14 @@ void VROverlayController::PollEvents() {
 					break;
 				}
 
-				case vr::VREvent_MouseButtonUp: {
+				case VREvent_MouseButtonUp: {
 					QPointF newPosition(static_cast<qreal>(event.data.mouse.x),
 										static_cast<qreal>(event.data.mouse.y));
 
 					QPoint newPositionInt = newPosition.toPoint();
 					QPoint lastPositionInt = m_lastPosition.toPoint();
 
-					Qt::MouseButton button = (event.data.mouse.button == vr::VRMouseButton_Right) ?
+					Qt::MouseButton button = (event.data.mouse.button == VRMouseButton_Right) ?
 											 Qt::RightButton
 											 : Qt::LeftButton;
 
@@ -537,7 +549,7 @@ void VROverlayController::PollEvents() {
 					break;
 				}
 
-				case vr::VREvent_ScrollSmooth: {
+				case VREvent_ScrollSmooth: {
 					QPoint scrollDelta(static_cast<int>(event.data.scroll.xdelta * SCROLL_SPEED),
 									   static_cast<int>(event.data.scroll.ydelta * SCROLL_SPEED));
 
@@ -567,8 +579,8 @@ void VROverlayController::PollEvents() {
 					break;
 				}
 
-				case vr::VREvent_Notification_BeginInteraction: {
-					if (event.data.notification.ulUserValue == VR_CONTROLLER_USERVALUE) {
+				case VREvent_Notification_BeginInteraction: {
+					if (event.data.notification.ulUserValue == USER_VALUE) {
 						auto iterator = m_notifications.begin();
 
 						while (iterator != m_notifications.end()) {
@@ -587,8 +599,8 @@ void VROverlayController::PollEvents() {
 					break;
 				}
 
-				case vr::VREvent_Notification_Destroyed: {
-					if (event.data.notification.ulUserValue == VR_CONTROLLER_USERVALUE) {
+				case VREvent_Notification_Destroyed: {
+					if (event.data.notification.ulUserValue == USER_VALUE) {
 						auto iterator = m_notifications.begin();
 
 						while (iterator != m_notifications.end()) {
@@ -605,10 +617,12 @@ void VROverlayController::PollEvents() {
 					break;
 				}
 
-				case vr::VREvent_KeyboardDone: {
-					if (event.data.keyboard.uUserValue >= VR_CONTROLLER_USERVALUE
-							&& event.data.keyboard.uUserValue <= VR_CONTROLLER_USERVALUE + 255) {
-						vr::IVROverlay* overlay = vr::VROverlay();
+				case VREvent_KeyboardDone: {
+					m_keyboardVisible = false;
+
+					if (event.data.keyboard.uUserValue >= USER_VALUE
+							&& event.data.keyboard.uUserValue <= USER_VALUE + 255) {
+						IVROverlay* overlay = VROverlay();
 
 						if (overlay == nullptr) {
 							spdlog::error("KeyboardDone: IVROverlay interface not available");
@@ -617,7 +631,7 @@ void VROverlayController::PollEvents() {
 						}
 
 						uint8_t identifier = static_cast<uint8_t>(event.data.keyboard.uUserValue
-																  - VR_CONTROLLER_USERVALUE);
+																  - USER_VALUE);
 
 						char buffer[256];
 
@@ -629,7 +643,11 @@ void VROverlayController::PollEvents() {
 					break;
 				}
 
-				case vr::VREvent_OverlayShown:
+				case VREvent_KeyboardClosed:
+					m_keyboardVisible = false;
+					break;
+
+				case VREvent_OverlayShown:
 					m_renderRequested = true;
 
 					if (!m_overlayVisible) {
@@ -640,7 +658,7 @@ void VROverlayController::PollEvents() {
 
 					break;
 
-				case vr::VREvent_OverlayHidden:
+				case VREvent_OverlayHidden:
 					if (m_overlayVisible) {
 						m_overlayVisible = false;
 
@@ -649,18 +667,18 @@ void VROverlayController::PollEvents() {
 
 					break;
 
-				case vr::VREvent_Quit:
-				case vr::VREvent_DriverRequestedQuit:
+				case VREvent_Quit:
+				case VREvent_DriverRequestedQuit:
 					qApp->quit();
 					break;
 			}
 		}
 	}
 
-	if (m_overlayThumbnailHandle != vr::k_ulOverlayHandleInvalid) {
+	if (m_overlayThumbnailHandle != k_ulOverlayHandleInvalid) {
 		while (overlay->PollNextOverlayEvent(m_overlayThumbnailHandle, &event, sizeof(event))) {
 			switch (event.eventType) {
-				case vr::VREvent_OverlayShown:
+				case VREvent_OverlayShown:
 					m_renderRequested = true;
 					break;
 			}
@@ -668,16 +686,16 @@ void VROverlayController::PollEvents() {
 	}
 }
 
-bool VROverlayController::InitVRRuntime(vr::EVRApplicationType applicationType,
-										std::string* error) {
-	vr::HmdError hmdError = vr::VRInitError_None;
+bool OverlayController::InitVRRuntime(EVRApplicationType applicationType,
+									  std::string* error) {
+	HmdError hmdError = VRInitError_None;
 
-	vr::VR_Init(&hmdError, applicationType);
+	VR_Init(&hmdError, applicationType);
 
-	if (hmdError != vr::VRInitError_None) {
+	if (hmdError != VRInitError_None) {
 		if (error != nullptr) {
 			*error = std::string("Failed to initialize OpenVR runtime: ")
-					 + vr::VR_GetVRInitErrorAsEnglishDescription(hmdError);
+					 + VR_GetVRInitErrorAsEnglishDescription(hmdError);
 		}
 
 		return false;
@@ -688,8 +706,8 @@ bool VROverlayController::InitVRRuntime(vr::EVRApplicationType applicationType,
 	return true;
 }
 
-void VROverlayController::ShutdownVRRuntime() {
-	vr::VR_Shutdown();
+void OverlayController::ShutdownVRRuntime() {
+	VR_Shutdown();
 
 	spdlog::info("VR runtime shutdown");
 }

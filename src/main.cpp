@@ -11,15 +11,18 @@
 
 #include "common.h"
 #include "crypto.h"
-#include "vr_overlay_controller.h"
+#include "openvr/overlay_controller.h"
 #include "widgets/main_widget.h"
+
+using namespace vr;
+using namespace OpenVR;
 
 /*
  * Install the application manifest & enable auto-start
  */
 
 bool installVRManifest(std::string manifestPath, std::string* error) {
-	vr::IVRApplications* applications = vr::VRApplications();
+	IVRApplications* applications = VRApplications();
 
 	if (applications == nullptr) {
 		if (error != nullptr) {
@@ -33,11 +36,11 @@ bool installVRManifest(std::string manifestPath, std::string* error) {
 		return true;
 	}
 
-	vr::EVRApplicationError applicationError;
+	EVRApplicationError applicationError;
 
 	applicationError = applications->AddApplicationManifest(manifestPath.c_str());
 
-	if (applicationError != vr::VRApplicationError_None) {
+	if (applicationError != VRApplicationError_None) {
 		if (error != nullptr) {
 			*error = std::string("IVRApplications: ")
 					 + applications->GetApplicationsErrorNameFromEnum(applicationError);
@@ -48,7 +51,7 @@ bool installVRManifest(std::string manifestPath, std::string* error) {
 
 	applicationError = applications->SetApplicationAutoLaunch(MANIFEST_KEY, true);
 
-	if (applicationError != vr::VRApplicationError_None) {
+	if (applicationError != VRApplicationError_None) {
 		if (error != nullptr) {
 			*error = std::string("IVRApplications: ")
 					 + applications->GetApplicationsErrorNameFromEnum(applicationError);
@@ -65,7 +68,7 @@ bool installVRManifest(std::string manifestPath, std::string* error) {
  */
 
 bool uninstallVRManifest(std::string manifestPath, std::string* error) {
-	vr::IVRApplications* applications = vr::VRApplications();
+	IVRApplications* applications = VRApplications();
 
 	if (applications == nullptr) {
 		if (error != nullptr) {
@@ -79,11 +82,11 @@ bool uninstallVRManifest(std::string manifestPath, std::string* error) {
 		return true;
 	}
 
-	vr::EVRApplicationError applicationError;
+	EVRApplicationError applicationError;
 
 	applicationError = applications->RemoveApplicationManifest(manifestPath.c_str());
 
-	if (applicationError != vr::VRApplicationError_None) {
+	if (applicationError != VRApplicationError_None) {
 		if (error != nullptr) {
 			*error = std::string("IVRApplications: ")
 					 + applications->GetApplicationsErrorNameFromEnum(applicationError);
@@ -112,14 +115,14 @@ bool handleManifestArguments(bool& install) {
 	if (installManifest || uninstallManifest) {
 		std::string error;
 
-		if (!VROverlayController::InitVRRuntime(vr::VRApplication_Utility, &error)) {
+		if (!OpenVR::OverlayController::InitVRRuntime(VRApplication_Utility, &error)) {
 			error.insert(0, "Failed to initialize OpenVR runtime: ");
 
 			throw std::runtime_error(error);
 		}
 
-		if (!vr::VR_IsInterfaceVersionValid(vr::IVRApplications_Version)) {
-			VROverlayController::ShutdownVRRuntime();
+		if (!VR_IsInterfaceVersionValid(IVRApplications_Version)) {
+			OverlayController::ShutdownVRRuntime();
 
 			throw std::runtime_error("Incompatible OpenVR version");
 		}
@@ -128,7 +131,7 @@ bool handleManifestArguments(bool& install) {
 											   .absoluteFilePath(MANIFEST_PATH));
 
 		if (!QFile::exists(manifestPath)) {
-			VROverlayController::ShutdownVRRuntime();
+			OverlayController::ShutdownVRRuntime();
 
 			error = std::string("Application manifest not found: ") + manifestPath.toStdString();
 
@@ -138,7 +141,7 @@ bool handleManifestArguments(bool& install) {
 		manifestPath = QDir::toNativeSeparators(manifestPath);
 
 		if (uninstallManifest && !uninstallVRManifest(manifestPath.toStdString(), &error)) {
-			VROverlayController::ShutdownVRRuntime();
+			OverlayController::ShutdownVRRuntime();
 
 			error.insert(0, "Failed to uninstall application manifest: ");
 
@@ -146,14 +149,14 @@ bool handleManifestArguments(bool& install) {
 		}
 
 		if (installManifest && !installVRManifest(manifestPath.toStdString(), &error)) {
-			VROverlayController::ShutdownVRRuntime();
+			OverlayController::ShutdownVRRuntime();
 
 			error.insert(0, "Failed to install application manifest: ");
 
 			throw std::runtime_error(error);
 		}
 
-		VROverlayController::ShutdownVRRuntime();
+		OverlayController::ShutdownVRRuntime();
 
 		install = installManifest;
 
@@ -210,7 +213,7 @@ int main(int argc, char* argv[]) {
 	setupApplication();
 
 	MainWidget* widget = nullptr;
-	VROverlayController* controller = nullptr;
+	OverlayController* controller = nullptr;
 
 	QObject::connect(&app, &QApplication::aboutToQuit, [&]() {
 		if (controller != nullptr) {
@@ -278,7 +281,7 @@ int main(int argc, char* argv[]) {
 		exit(EXIT_SUCCESS);
 	}
 
-	if (!vr::VR_IsRuntimeInstalled()) {
+	if (!VR_IsRuntimeInstalled()) {
 		spdlog::error("OpenVR runtime not installed");
 
 		if (!silent) {
@@ -312,7 +315,7 @@ int main(int argc, char* argv[]) {
 		widget = new MainWidget(&settings);
 
 		if (!desktop) {
-			controller = new VROverlayController(widget);
+			controller = new OverlayController(widget);
 		}
 	} catch (const std::runtime_error& ex) {
 		spdlog::error(ex.what());
@@ -328,34 +331,34 @@ int main(int argc, char* argv[]) {
 		widget->show();
 	} else {
 		QObject::connect(controller,
-						 &VROverlayController::OverlayShown,
+						 &OverlayController::OverlayShown,
 						 widget,
 						 &MainWidget::VROverlayShown);
 
 		QObject::connect(controller,
-						 &VROverlayController::NotificationOpened,
+						 &OverlayController::NotificationOpened,
 						 widget,
 						 &MainWidget::VRNotificationOpened);
 
 		QObject::connect(controller,
-						 &VROverlayController::KeyboardData,
+						 &OverlayController::KeyboardData,
 						 widget,
 						 &MainWidget::VRKeyboardData);
 
 		QObject::connect(widget,
 						 &MainWidget::ShowVRNotification,
 						 controller,
-						 &VROverlayController::ShowNotification);
+						 &OverlayController::ShowNotification);
 
 		QObject::connect(widget,
 						 &MainWidget::RemoveVRNotification,
 						 controller,
-						 &VROverlayController::RemoveNotification);
+						 &OverlayController::RemoveNotification);
 
 		QObject::connect(widget,
 						 &MainWidget::ShowVRKeyboard,
 						 controller,
-						 &VROverlayController::ShowKeyboard);
+						 &OverlayController::ShowKeyboard);
 	}
 
 	spdlog::info("Application started");

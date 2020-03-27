@@ -34,8 +34,8 @@ class Crypto {
 
 		static QString GetIdentifier(const unsigned char* publicKey);
 		static uint64_t GetCurrentTime();
-    static void WriteUInt64BE(unsigned char* dest, const uint64_t& src);
-    static uint64_t ReadUInt64BE(const unsigned char* src);
+		static void WriteUInt64BE(unsigned char* dest, const uint64_t& src);
+		static uint64_t ReadUInt64BE(const unsigned char* src);
 };
 
 #endif /* CRYPTO_H */
