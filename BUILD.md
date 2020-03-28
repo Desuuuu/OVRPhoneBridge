@@ -51,7 +51,7 @@ The [package](/scripts/package.bat) script will create a GZIP archive and an ins
 
 This script expects to find files where the build script put them, do not move these files around before packaging.
 
-If you want to create an installer, install [NSIS](https://nsis.sourceforge.io/Download), otherwise omit the `NSIS_PATH` variable later.
+If you want to create an installer, install [NSIS](https://nsis.sourceforge.io/Download) and the [NsProcess plugin](https://nsis.sourceforge.io/NsProcess_plugin), otherwise omit the `NSIS_PATH` variable later.
 
 Open a terminal and run (replace variables accordingly):
 

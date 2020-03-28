@@ -1,4 +1,5 @@
 !include "MUI2.nsh"
+!include "nsProcess.nsh"
 
 !define APP_NAME "OVRPhoneBridge"
 
@@ -68,11 +69,12 @@ Var StartMenuFolder
 !insertmacro MUI_LANGUAGE "English"
 
 !macro KillProcess
-	DetailPrint "Stopping OVRPhoneBridge process..."
-
-	ExecWait "taskkill /f /im ${EXE_NAME}"
-
-	Sleep 2000
+	nsProcess::_FindProcess "${EXE_NAME}"
+	Pop $0
+	IntCmp $0 0 0 +4 +4
+		DetailPrint "Stopping ${EXE_NAME}"
+		ExecWait "taskkill /f /im ${EXE_NAME}"
+		Sleep 2000
 !macroend
 
 Var IS_UPGRADE
@@ -100,7 +102,10 @@ Function .onInit
 FunctionEnd
 
 Function .onInstSuccess
-	Exec '"$INSTDIR\${EXE_NAME}" --silent'
+	nsProcess::_FindProcess "vrcompositor.exe"
+	Pop $0
+	IntCmp $0 0 0 +2 +2
+		Exec '"$INSTDIR\${EXE_NAME}" --silent'
 FunctionEnd
 
 Section "Install"
