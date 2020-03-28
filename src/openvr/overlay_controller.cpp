@@ -12,6 +12,7 @@
 
 #include "../common.h"
 #include "overlay_controller.h"
+#include "rigid_transform.h"
 
 using namespace vr;
 using namespace OpenVR;
@@ -243,14 +244,6 @@ bool OverlayController::ShowKeyboard(uint8_t identifier,
 		return false;
 	}
 
-	IVRCompositor* compositor = VRCompositor();
-
-	if (compositor == nullptr) {
-		spdlog::error("ShowKeyboard: IVRCompositor interface not available");
-
-		return false;
-	}
-
 	EGamepadTextInputMode inputMode = (password ?
 									   k_EGamepadTextInputModePassword
 									   : k_EGamepadTextInputModeNormal);
@@ -277,10 +270,73 @@ bool OverlayController::ShowKeyboard(uint8_t identifier,
 		return false;
 	}
 
+	m_keyboardVisible = true;
+
+	UpdateKeyboardPosition();
+
+	return true;
+}
+
+bool OverlayController::UpdateKeyboardPosition() {
+	if (!m_keyboardVisible) {
+		return false;
+	}
+
+	IVROverlay* overlay = VROverlay();
+
+	if (overlay == nullptr) {
+		spdlog::error("UpdateKeyboardPosition: IVROverlay interface not available");
+
+		return false;
+	}
+
+	IVRCompositor* compositor = VRCompositor();
+
+	if (compositor == nullptr) {
+		spdlog::error("UpdateKeyboardPosition: IVRCompositor interface not available");
+
+		return false;
+	}
+
+	VROverlayHandle_t systemOverlayHandle;
+
+	VROverlayError overlayError;
+
+	overlayError = overlay->FindOverlay("system.systemui", &systemOverlayHandle);
+
+	if (overlayError != VROverlayError_None) {
+		spdlog::error(std::string("UpdateKeyboardPosition: IVROverlay: ")
+					  + overlay->GetOverlayErrorNameFromEnum(overlayError));
+
+		return false;
+	}
+
+	ETrackingUniverseOrigin trackingSpace = compositor->GetTrackingSpace();
+
+	HmdMatrix34_t dashboardPosition;
+
+	overlay->GetOverlayTransformAbsolute(systemOverlayHandle, &trackingSpace, &dashboardPosition);
+
+	RigidTransform transform(dashboardPosition);
+
+	transform.TranslateY(-1.1f);
+	transform.TranslateZ(-0.25f);
+
+	transform.RotateX(30.0f);
+
+	transform.ScaleX(2.0f);
+	transform.ScaleY(2.0f);
+
+	dashboardPosition = transform.ToVRMatrix();
+
+	overlay->SetKeyboardTransformAbsolute(trackingSpace, &dashboardPosition);
+
 	return true;
 }
 
 bool OverlayController::HideKeyboard() {
+	m_keyboardVisible = false;
+
 	IVROverlay* overlay = VROverlay();
 
 	if (overlay == nullptr) {
@@ -645,6 +701,10 @@ void OverlayController::PollEvents() {
 
 				case VREvent_KeyboardClosed:
 					m_keyboardVisible = false;
+					break;
+
+				case VREvent_TrackedDeviceUserInteractionStarted:
+					QTimer::singleShot(100, this, &OverlayController::UpdateKeyboardPosition);
 					break;
 
 				case VREvent_OverlayShown:

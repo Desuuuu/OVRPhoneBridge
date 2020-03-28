@@ -11,6 +11,7 @@ SOURCES += src/main.cpp \
     src/server.cpp \
     src/client.cpp \
     src/bridge.cpp \
+    src/openvr/rigid_transform.cpp \
     src/openvr/overlay_controller.cpp \
     src/widgets/fade_widget.cpp \
     src/widgets/focus_line_edit.cpp \
@@ -31,6 +32,7 @@ HEADERS += src/common.h \
     src/server.h \
     src/client.h \
     src/bridge.h \
+    src/openvr/rigid_transform.h \
     src/openvr/overlay_controller.h \
     src/widgets/fade_widget.h \
     src/widgets/focus_line_edit.h \

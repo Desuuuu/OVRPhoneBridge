@@ -39,6 +39,7 @@ namespace OpenVR {
 							  const char* description = nullptr,
 							  bool singleLine = true,
 							  bool password = false);
+			bool UpdateKeyboardPosition();
 			bool HideKeyboard();
 
 		private slots:
