@@ -5,6 +5,7 @@
 
 #include <QHash>
 #include <QWidget>
+#include <QSharedPointer>
 #include <QPropertyAnimation>
 
 class FadeWidget : public QWidget {
@@ -27,7 +28,7 @@ class FadeWidget : public QWidget {
 		void OnAnimationFinished();
 
 	private:
-		QHash<QWidget*, QPair<QPropertyAnimation*, std::function<void(bool)>>> m_animations;
+		QHash<QWidget*, QPair<QSharedPointer<QPropertyAnimation>, std::function<void(bool)>>> m_animations;
 };
 
 #endif /* FADE_WIDGET_H */

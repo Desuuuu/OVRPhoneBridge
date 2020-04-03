@@ -25,6 +25,8 @@ Client::Client(const QString* serverPublicKey,
 	  m_osVersion(QString()),
 	  m_notifications(false),
 	  m_sms(false) {
+	m_socket->setParent(this);
+
 	connect(m_socket, &QTcpSocket::readyRead, this, &Client::SocketReadyRead);
 	connect(m_socket, &QTcpSocket::disconnected, this, &Client::SocketDisconnected);
 }
@@ -35,11 +37,7 @@ Client::~Client() {
 	}
 
 	if (m_socket != nullptr) {
-		disconnect(m_socket, &QTcpSocket::readyRead, this, &Client::SocketReadyRead);
-		disconnect(m_socket, &QTcpSocket::disconnected, this, &Client::SocketDisconnected);
-
 		m_socket->abort();
-		m_socket->deleteLater();
 	}
 }
 
@@ -179,14 +177,6 @@ void Client::SocketReadyRead() {
 }
 
 void Client::SocketDisconnected() {
-	if (m_socket != nullptr) {
-		disconnect(m_socket, &QTcpSocket::readyRead, this, &Client::SocketReadyRead);
-		disconnect(m_socket, &QTcpSocket::disconnected, this, &Client::SocketDisconnected);
-
-		m_socket->deleteLater();
-		m_socket = nullptr;
-	}
-
 	emit Disconnected();
 }
 

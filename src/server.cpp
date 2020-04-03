@@ -34,7 +34,6 @@ Server::Server(const QString& publicKey,
 }
 
 Server::~Server() {
-	Stop();
 }
 
 void Server::Stop() {
@@ -44,7 +43,7 @@ void Server::Stop() {
 	}
 
 	while (!m_clients.isEmpty()) {
-		Client* client = m_clients.takeFirst();
+		QPointer<Client> client(m_clients.takeFirst());
 
 		if (client != nullptr) {
 			disconnect(client, &Client::HandshakePending, this, &Server::ClientHandshakePending);
@@ -56,6 +55,7 @@ void Server::Stop() {
 	}
 
 	if (m_client != nullptr) {
+		m_client->deleteLater();
 		m_client = nullptr;
 
 		emit ConnectedChange(false);
@@ -90,7 +90,7 @@ void Server::KickClient() {
 
 void Server::NewConnection() {
 	while (m_server->hasPendingConnections()) {
-		QTcpSocket* socket = m_server->nextPendingConnection();
+		QScopedPointer<QTcpSocket> socket(m_server->nextPendingConnection());
 
 		if (socket != nullptr) {
 			if (m_banList.contains(socket->peerAddress())) {
@@ -98,13 +98,12 @@ void Server::NewConnection() {
 							 + socket->peerAddress().toString().toStdString());
 
 				socket->abort();
-				socket->deleteLater();
 				return;
 			}
 
 			socket->setSocketOption(QTcpSocket::KeepAliveOption, 1);
 
-			Client* client = new Client(&m_publicKey, &m_secretKey, socket, this);
+			QPointer<Client> client(new Client(&m_publicKey, &m_secretKey, socket.take(), this));
 
 			connect(client, &Client::HandshakePending, this, &Server::ClientHandshakePending);
 			connect(client, &Client::Disconnected, this, &Server::ClientDisconnected);
@@ -131,10 +130,10 @@ void Server::ClearBans() {
 void Server::KickInactiveClients() {
 	qint64 timestamp = QDateTime::currentSecsSinceEpoch();
 
-	QMutableListIterator<Client*> iterator(m_clients);
+	QMutableListIterator<QPointer<Client>> iterator(m_clients);
 
 	while (iterator.hasNext()) {
-		Client* client = iterator.next();
+		QPointer<Client> client(iterator.next());
 
 		if (client == nullptr) {
 			iterator.remove();
@@ -161,7 +160,7 @@ void Server::KickInactiveClients() {
 }
 
 void Server::ClientHandshakePending() {
-	Client* client = qobject_cast<Client*>(sender());
+	QPointer<Client> client(qobject_cast<Client*>(sender()));
 
 	if (client != nullptr) {
 		if (m_client != nullptr && client != m_client) {
@@ -182,7 +181,7 @@ void Server::ClientHandshakePending() {
 }
 
 void Server::ClientDisconnected() {
-	Client* client = qobject_cast<Client*>(sender());
+	QPointer<Client> client(qobject_cast<Client*>(sender()));
 
 	if (client != nullptr) {
 		disconnect(client, &Client::HandshakePending, this, &Server::ClientHandshakePending);
@@ -202,7 +201,7 @@ void Server::ClientDisconnected() {
 }
 
 void Server::ClientMessageReceived(const QString& type, const QJsonObject& json) {
-	Client* client = qobject_cast<Client*>(sender());
+	QPointer<Client> client(qobject_cast<Client*>(sender()));
 
 	if (client != nullptr && client == m_client) {
 		emit MessageReceived(type, json);

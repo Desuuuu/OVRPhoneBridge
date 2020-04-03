@@ -19,6 +19,10 @@ win32 {
 
 macx:ICON = images/icons/icon.icns
 
+CONFIG(debug, debug|release) {
+    DEFINES += QT_SHAREDPOINTER_TRACK_POINTERS
+}
+
 include(spdlog.pri)
 include(libsodium.pri)
 include(openvr.pri)

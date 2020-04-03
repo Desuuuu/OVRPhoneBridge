@@ -2,7 +2,6 @@
 #define OVERLAY_CONTROLLER_H
 
 #include <map>
-#include <memory>
 
 #include <QObject>
 #include <QWidget>
@@ -55,10 +54,10 @@ namespace OpenVR {
 		private:
 			static const unsigned int USER_VALUE = 850486;
 
-			std::unique_ptr<QOpenGLContext> m_context;
-			std::unique_ptr<QOffscreenSurface> m_surface;
-			std::unique_ptr<QGraphicsScene> m_scene;
-			std::unique_ptr<QOpenGLFramebufferObject> m_frameBuffer;
+			QScopedPointer<QOpenGLContext> m_context;
+			QScopedPointer<QOffscreenSurface> m_surface;
+			QScopedPointer<QGraphicsScene> m_scene;
+			QScopedPointer<QOpenGLFramebufferObject> m_frameBuffer;
 
 			vr::VROverlayHandle_t m_overlayHandle;
 			vr::VROverlayHandle_t m_overlayThumbnailHandle;
@@ -77,7 +76,6 @@ namespace OpenVR {
 			bool m_keyboardVisible;
 
 			bool InitOpenGL(std::string* error = nullptr);
-			void CleanupOpenGL();
 			bool SetupOverlay(std::string* error = nullptr);
 			void LoadNotificationAssets();
 			bool SetupWidget(std::string* error = nullptr);

@@ -2,6 +2,7 @@
 #define CLIENT_H
 
 #include <QObject>
+#include <QPointer>
 #include <QTcpSocket>
 
 #include "crypto.h"
@@ -51,7 +52,7 @@ class Client : public QObject {
 		const QString* m_serverPublicKey;
 		const QString* m_serverSecretKey;
 
-		QTcpSocket* m_socket;
+		QPointer<QTcpSocket> m_socket;
 		qint64 m_connectTime;
 		bool m_handshakeDone;
 

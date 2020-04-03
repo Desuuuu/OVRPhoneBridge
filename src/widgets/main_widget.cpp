@@ -327,7 +327,7 @@ void MainWidget::StopServer() {
 	if (m_server != nullptr) {
 		m_server->Stop();
 
-		delete m_server;
+		m_server->deleteLater();
 		m_server = nullptr;
 	}
 }

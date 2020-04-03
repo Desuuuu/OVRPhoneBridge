@@ -8,10 +8,6 @@ FadeWidget::FadeWidget(QWidget* parent)
 }
 
 FadeWidget::~FadeWidget() {
-	for (auto pair : m_animations) {
-		pair.first->deleteLater();
-	}
-
 	m_animations.clear();
 }
 
@@ -21,8 +17,9 @@ void FadeWidget::CancelAnimation(QWidget* widget) {
 
 		m_animations.remove(widget);
 
-		pair.first->stop();
-		pair.first->deleteLater();
+		if (pair.first != nullptr) {
+			pair.first->stop();
+		}
 
 		if (pair.second != nullptr) {
 			pair.second(true);
@@ -34,8 +31,9 @@ void FadeWidget::CancelAnimations() {
 	QVector<std::function<void(bool)>> doneVector;
 
 	for (auto pair : m_animations) {
-		pair.first->stop();
-		pair.first->deleteLater();
+		if (pair.first != nullptr) {
+			pair.first->stop();
+		}
 
 		doneVector.append(pair.second);
 	}
@@ -59,11 +57,10 @@ void FadeWidget::OnAnimationFinished() {
 
 		while (iterator != m_animations.end()) {
 			if (source == iterator.value().first) {
-				if (iterator.value().first->objectName() == "fadeOut") {
+				if (iterator.value().first != nullptr
+						&& iterator.value().first->objectName() == "fadeOut") {
 					iterator.key()->setVisible(false);
 				}
-
-				iterator.value().first->deleteLater();
 
 				done = iterator.value().second;
 
@@ -112,11 +109,13 @@ void FadeWidget::FadeIn(QWidget* widget, int duration, const QEasingCurve& easin
 		return;
 	}
 
-	QPropertyAnimation* animation = new QPropertyAnimation(effect, "opacity");
+	QSharedPointer<QPropertyAnimation> animation(new QPropertyAnimation(effect, "opacity"));
 
-	m_animations.insert(widget, QPair<QPropertyAnimation*, std::function<void(bool)>>(animation, done));
+	QPair<QSharedPointer<QPropertyAnimation>, std::function<void(bool)>> pair(animation, done);
 
-	connect(animation, &QPropertyAnimation::finished, this, &FadeWidget::OnAnimationFinished);
+	m_animations.insert(widget, pair);
+
+	connect(animation.get(), &QPropertyAnimation::finished, this, &FadeWidget::OnAnimationFinished);
 
 	animation->setObjectName("fadeIn");
 	animation->setDuration(duration);
@@ -160,11 +159,13 @@ void FadeWidget::FadeOut(QWidget* widget, int duration, const QEasingCurve& easi
 		return;
 	}
 
-	QPropertyAnimation* animation = new QPropertyAnimation(effect, "opacity");
+	QSharedPointer<QPropertyAnimation> animation(new QPropertyAnimation(effect, "opacity"));
 
-	m_animations.insert(widget, QPair<QPropertyAnimation*, std::function<void(bool)>>(animation, done));
+	QPair<QSharedPointer<QPropertyAnimation>, std::function<void(bool)>> pair(animation, done);
 
-	connect(animation, &QPropertyAnimation::finished, this, &FadeWidget::OnAnimationFinished);
+	m_animations.insert(widget, pair);
+
+	connect(animation.get(), &QPropertyAnimation::finished, this, &FadeWidget::OnAnimationFinished);
 
 	animation->setObjectName("fadeOut");
 	animation->setDuration(duration);

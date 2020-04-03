@@ -86,8 +86,6 @@ OverlayController::~OverlayController() {
 		delete[] reinterpret_cast<char*>(m_notificationBitmap.m_pImageData);
 		m_notificationBitmap.m_pImageData = nullptr;
 	}
-
-	CleanupOpenGL();
 }
 
 bool OverlayController::InitOpenGL(std::string* error) {
@@ -122,13 +120,6 @@ bool OverlayController::InitOpenGL(std::string* error) {
 	});
 
 	return true;
-}
-
-void OverlayController::CleanupOpenGL() {
-	m_frameBuffer.reset(nullptr);
-	m_scene.reset(nullptr);
-	m_context.reset(nullptr);
-	m_surface.reset(nullptr);
 }
 
 bool OverlayController::ShowNotification(const std::string& identifier,

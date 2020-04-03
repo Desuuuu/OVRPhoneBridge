@@ -2,6 +2,7 @@
 #define SETTINGS_TAB_WIDGET_H
 
 #include <QWidget>
+#include <QPointer>
 #include <QSettings>
 
 #include "../../common.h"
@@ -47,7 +48,7 @@ class SettingsTabWidget : public QWidget {
 	private:
 		Ui::SettingsTabWidget* ui;
 
-		QSettings* m_settings;
+		QPointer<QSettings> m_settings;
 		ServerState m_serverState;
 		bool m_desktop;
 

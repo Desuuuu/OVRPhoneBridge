@@ -59,9 +59,10 @@ class MainWidget : public FadeWidget {
 		Tab m_currentTab;
 		ServerState m_serverState;
 
-		QSettings* m_settings;
-		Bridge* m_bridge;
-		Server* m_server;
+		QPointer<QSettings> m_settings;
+
+		QPointer<Bridge> m_bridge;
+		QPointer<Server> m_server;
 
 		NotificationsTabWidget* m_notificationsTab;
 		SMSTabWidget* m_smsTab;

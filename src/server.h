@@ -4,6 +4,7 @@
 #include <QList>
 #include <QObject>
 #include <QString>
+#include <QPointer>
 #include <QTcpServer>
 #include <QJsonObject>
 
@@ -46,9 +47,9 @@ class Server : public QObject {
 		QString m_publicKey;
 		QString m_secretKey;
 
-		QTcpServer* m_server;
-		Client* m_client;
-		QList<Client*> m_clients;
+		QPointer<QTcpServer> m_server;
+		QPointer<Client> m_client;
+		QList<QPointer<Client>> m_clients;
 		QHash<QHostAddress, qint64> m_banList;
 };
 

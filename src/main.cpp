@@ -212,15 +212,10 @@ int main(int argc, char* argv[]) {
 
 	setupApplication();
 
-	MainWidget* widget = nullptr;
-	OverlayController* controller = nullptr;
+	QScopedPointer<MainWidget> widget(nullptr);
+	QScopedPointer<OverlayController> controller(nullptr);
 
 	QObject::connect(&app, &QApplication::aboutToQuit, [&]() {
-		if (controller != nullptr) {
-			delete controller;
-			controller = nullptr;
-		}
-
 		spdlog::info("Application shutdown");
 
 		spdlog::shutdown();
@@ -312,10 +307,10 @@ int main(int argc, char* argv[]) {
 			exit(EXIT_SUCCESS);
 		}
 
-		widget = new MainWidget(&settings);
+		widget.reset(new MainWidget(&settings));
 
 		if (!desktop) {
-			controller = new OverlayController(widget);
+			controller.reset(new OverlayController(widget.data()));
 		}
 	} catch (const std::runtime_error& ex) {
 		spdlog::error(ex.what());
@@ -330,34 +325,34 @@ int main(int argc, char* argv[]) {
 	if (desktop) {
 		widget->show();
 	} else {
-		QObject::connect(controller,
+		QObject::connect(controller.data(),
 						 &OverlayController::OverlayShown,
-						 widget,
+						 widget.data(),
 						 &MainWidget::VROverlayShown);
 
-		QObject::connect(controller,
+		QObject::connect(controller.data(),
 						 &OverlayController::NotificationOpened,
-						 widget,
+						 widget.data(),
 						 &MainWidget::VRNotificationOpened);
 
-		QObject::connect(controller,
+		QObject::connect(controller.data(),
 						 &OverlayController::KeyboardData,
-						 widget,
+						 widget.data(),
 						 &MainWidget::VRKeyboardData);
 
-		QObject::connect(widget,
+		QObject::connect(widget.data(),
 						 &MainWidget::ShowVRNotification,
-						 controller,
+						 controller.data(),
 						 &OverlayController::ShowNotification);
 
-		QObject::connect(widget,
+		QObject::connect(widget.data(),
 						 &MainWidget::RemoveVRNotification,
-						 controller,
+						 controller.data(),
 						 &OverlayController::RemoveNotification);
 
-		QObject::connect(widget,
+		QObject::connect(widget.data(),
 						 &MainWidget::ShowVRKeyboard,
-						 controller,
+						 controller.data(),
 						 &OverlayController::ShowKeyboard);
 	}
 
