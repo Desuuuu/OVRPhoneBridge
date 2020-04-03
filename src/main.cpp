@@ -4,6 +4,7 @@
 #include <QString>
 #include <QMessageBox>
 #include <QApplication>
+#include <QScopedPointer>
 #include <QStandardPaths>
 
 #include <sodium/core.h>

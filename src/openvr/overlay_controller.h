@@ -6,6 +6,7 @@
 #include <QWidget>
 #include <QPointF>
 #include <QSoundEffect>
+#include <QScopedPointer>
 #include <QOpenGLContext>
 #include <QGraphicsScene>
 #include <QOffscreenSurface>

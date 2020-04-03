@@ -1,5 +1,6 @@
 #include <QTimer>
 #include <QJsonDocument>
+#include <QScopedPointer>
 
 #include <spdlog/spdlog.h>
 
