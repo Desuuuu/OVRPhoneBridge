@@ -1,5 +1,4 @@
-#ifndef SERVER_H
-#define SERVER_H
+#pragma once
 
 #include <QList>
 #include <QObject>
@@ -52,5 +51,3 @@ class Server : public QObject {
 		QList<QPointer<Client>> m_clients;
 		QHash<QHostAddress, qint64> m_banList;
 };
-
-#endif /* SERVER_H */

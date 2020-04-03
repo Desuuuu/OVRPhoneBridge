@@ -1,5 +1,4 @@
-#ifndef VERTICAL_SCROLL_AREA_H
-#define VERTICAL_SCROLL_AREA_H
+#pragma once
 
 #include <QWidget>
 #include <QScrollArea>
@@ -13,5 +12,3 @@ class VerticalScrollArea : public QScrollArea {
 	protected:
 		void resizeEvent(QResizeEvent* e) override;
 };
-
-#endif /* VERTICAL_SCROLL_AREA_H */

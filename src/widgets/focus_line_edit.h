@@ -1,5 +1,4 @@
-#ifndef FOCUS_LINE_EDIT_H
-#define FOCUS_LINE_EDIT_H
+#pragma once
 
 #include <QWidget>
 #include <QLineEdit>
@@ -17,5 +16,3 @@ class FocusLineEdit : public QLineEdit {
 	signals:
 		void FocusReceived(FocusLineEdit* edit);
 };
-
-#endif /* FOCUS_LINE_EDIT_H */

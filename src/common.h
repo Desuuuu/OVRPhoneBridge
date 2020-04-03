@@ -1,5 +1,4 @@
-#ifndef COMMON_H
-#define COMMON_H
+#pragma once
 
 #include <locale>
 #include <stdint.h>
@@ -111,5 +110,3 @@ inline QString ellipsize(const QString& str, int maxLen) {
 
 	return str.left(maxLen - 1) + "…";
 }
-
-#endif /* COMMON_H */

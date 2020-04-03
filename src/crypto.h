@@ -1,5 +1,4 @@
-#ifndef CRYPTO_H
-#define CRYPTO_H
+#pragma once
 
 #include <string>
 #include <stdexcept>
@@ -37,5 +36,3 @@ class Crypto {
 		static void WriteUInt64BE(unsigned char* dest, const uint64_t& src);
 		static uint64_t ReadUInt64BE(const unsigned char* src);
 };
-
-#endif /* CRYPTO_H */

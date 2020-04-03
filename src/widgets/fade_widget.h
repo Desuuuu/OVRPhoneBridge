@@ -1,5 +1,4 @@
-#ifndef FADE_WIDGET_H
-#define FADE_WIDGET_H
+#pragma once
 
 #include <functional>
 
@@ -30,5 +29,3 @@ class FadeWidget : public QWidget {
 	private:
 		QHash<QWidget*, QPair<QSharedPointer<QPropertyAnimation>, std::function<void(bool)>>> m_animations;
 };
-
-#endif /* FADE_WIDGET_H */

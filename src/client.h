@@ -1,5 +1,4 @@
-#ifndef CLIENT_H
-#define CLIENT_H
+#pragma once
 
 #include <QObject>
 #include <QPointer>
@@ -70,5 +69,3 @@ class Client : public QObject {
 		void HandshakePhase2(const QJsonObject& json);
 		void ProcessMessage(const QString& message);
 };
-
-#endif

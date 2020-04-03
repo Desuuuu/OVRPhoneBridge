@@ -1,5 +1,4 @@
-#ifndef SMS_WIDGET_H
-#define SMS_WIDGET_H
+#pragma once
 
 #include <QWidget>
 #include <QMouseEvent>
@@ -20,5 +19,3 @@ class SMSWidget : public QWidget {
 	private:
 		QString m_number;
 };
-
-#endif /* SMS_WIDGET_H */

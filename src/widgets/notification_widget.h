@@ -1,5 +1,4 @@
-#ifndef NOTIFICATION_WIDGET_H
-#define NOTIFICATION_WIDGET_H
+#pragma once
 
 #include <QWidget>
 
@@ -24,5 +23,3 @@ class NotificationWidget : public QWidget {
 		QString m_key;
 		bool m_persistent;
 };
-
-#endif /* NOTIFICATION_WIDGET_H */

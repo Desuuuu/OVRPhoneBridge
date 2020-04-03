@@ -1,5 +1,4 @@
-#ifndef OVERLAY_CONTROLLER_H
-#define OVERLAY_CONTROLLER_H
+#pragma once
 
 #include <map>
 
@@ -81,5 +80,3 @@ namespace OpenVR {
 			bool SetupWidget(std::string* error = nullptr);
 	};
 };
-
-#endif /* OVERLAY_CONTROLLER_H */

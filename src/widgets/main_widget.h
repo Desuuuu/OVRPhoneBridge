@@ -1,5 +1,4 @@
-#ifndef MAIN_WIDGET_H
-#define MAIN_WIDGET_H
+#pragma once
 
 #include <QDir>
 #include <QWidget>
@@ -87,5 +86,3 @@ class MainWidget : public FadeWidget {
 		void SetupDeviceTab();
 		void SetupSettingsTab();
 };
-
-#endif /* MAIN_WIDGET_H */

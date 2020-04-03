@@ -1,5 +1,4 @@
-#ifndef BRIDGE_H
-#define BRIDGE_H
+#pragma once
 
 #include <QObject>
 #include <QJsonObject>
@@ -34,5 +33,3 @@ class Bridge : public QObject {
 						 const std::list<ShortSMS>& list);
 		void SMSSent(const QString& number, bool success, const ShortSMS& shortSms);
 };
-
-#endif /* BRIDGE_H */

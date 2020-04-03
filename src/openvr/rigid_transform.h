@@ -1,5 +1,4 @@
-#ifndef RIGID_TRANSFORM_H
-#define RIGID_TRANSFORM_H
+#pragma once
 
 #include <cmath>
 
@@ -56,5 +55,3 @@ namespace OpenVR {
 			static constexpr float DEG2RAD = static_cast<float>(M_PI / 180);
 	};
 };
-
-#endif /* RIGID_TRANSFORM_H */

@@ -1,5 +1,4 @@
-#ifndef HIGHLIGHT_BUTTON_H
-#define HIGHLIGHT_BUTTON_H
+#pragma once
 
 #include <QWidget>
 #include <QPushButton>
@@ -23,5 +22,3 @@ class HighlightButton : public QPushButton {
 	private:
 		bool m_highlight;
 };
-
-#endif /* HIGHLIGHT_BUTTON_H */

@@ -1,5 +1,4 @@
-#ifndef DEVICE_TAB_WIDGET_H
-#define DEVICE_TAB_WIDGET_H
+#pragma once
 
 #define POSITION_NAME       0
 #define POSITION_ADDRESS    1
@@ -39,5 +38,3 @@ class DeviceTabWidget : public QWidget {
 	private:
 		Ui::DeviceTabWidget* ui;
 };
-
-#endif /* DEVICE_TAB_WIDGET_H */

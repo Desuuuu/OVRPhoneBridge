@@ -1,5 +1,4 @@
-#ifndef NOTIFICATIONS_TAB_WIDGET_H
-#define NOTIFICATIONS_TAB_WIDGET_H
+#pragma once
 
 #include <QWidget>
 
@@ -55,5 +54,3 @@ class NotificationsTabWidget : public QWidget {
 		void InsertNotification(const Notification& notification, bool skipRemove = false);
 		void RemoveNotification(const QString& key);
 };
-
-#endif /* NOTIFICATIONS_TAB_WIDGET_H */

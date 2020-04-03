@@ -1,5 +1,4 @@
-#ifndef SMS_TAB_WIDGET_H
-#define SMS_TAB_WIDGET_H
+#pragma once
 
 #include <QWidget>
 
@@ -81,5 +80,3 @@ class SMSTabWidget : public QWidget {
 		void InsertSMS(const SMS& sms);
 		void InsertShortSMS(const ShortSMS& shortSms);
 };
-
-#endif /* SMS_TAB_WIDGET_H */

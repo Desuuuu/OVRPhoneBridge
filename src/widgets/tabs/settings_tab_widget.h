@@ -1,5 +1,4 @@
-#ifndef SETTINGS_TAB_WIDGET_H
-#define SETTINGS_TAB_WIDGET_H
+#pragma once
 
 #include <QWidget>
 #include <QPointer>
@@ -54,5 +53,3 @@ class SettingsTabWidget : public QWidget {
 
 		bool SavePort(const std::string& input);
 };
-
-#endif /* SETTINGS_TAB_WIDGET_H */

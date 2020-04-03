@@ -1,5 +1,4 @@
-#ifndef FOCUS_PLAIN_TEXT_EDIT_H
-#define FOCUS_PLAIN_TEXT_EDIT_H
+#pragma once
 
 #include <QWidget>
 #include <QMouseEvent>
@@ -18,5 +17,3 @@ class FocusPlainTextEdit : public QPlainTextEdit {
 	signals:
 		void FocusReceived(FocusPlainTextEdit* edit);
 };
-
-#endif /* FOCUS_PLAIN_TEXT_EDIT_H */

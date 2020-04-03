@@ -1,5 +1,4 @@
-#ifndef SHORT_SMS_WIDGET_H
-#define SHORT_SMS_WIDGET_H
+#pragma once
 
 #include <QWidget>
 
@@ -14,5 +13,3 @@ class ShortSMSWidget : public QWidget {
 	protected:
 		void paintEvent(QPaintEvent* e) override;
 };
-
-#endif /* SHORT_SMS_WIDGET_H */
