@@ -117,11 +117,11 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 QTableWidget {
   color: #ddd;
   font-size: 18pt;
-  gridline-color: #1b2e43;
+  border: 1px solid #1b2e43;
   background-color: transparent;
 }
 QTableWidget::item {
-  border: none;
+  border: 1px solid #1b2e43;
   padding: 12px 50px 12px 20px;
 }
 QTableWidget::item:disabled {

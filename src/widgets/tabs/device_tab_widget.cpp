@@ -114,7 +114,7 @@ void DeviceTabWidget::ServerStateChanged(const ServerState& state) {
 
 		ui->contentTable->resizeColumnsToContents();
 		ui->contentTable->resizeRowsToContents();
-		ui->contentTable->repaint();
+		ui->contentTable->update();
 
 		ui->contentWidget->setVisible(true);
 	}
